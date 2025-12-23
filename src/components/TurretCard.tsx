@@ -4,7 +4,9 @@ import {
   Radio, 
   Server, 
   Hash, 
-  User
+  User,
+  PhoneIncoming,
+  Pause
 } from 'lucide-react';
 
 interface TurretData {
@@ -21,113 +23,122 @@ interface TurretCardProps {
 }
 
 const TurretCard = ({ turret }: TurretCardProps) => {
-  const getStateColor = (state: string) => {
+  const getStateConfig = (state: string) => {
     switch (state) {
-      case 'CONNECTED': return 'text-green-400';
-      case 'DISCONNECTED': return 'text-red-400';
-      case 'RINGING': return 'text-yellow-400';
-      case 'HOLD': return 'text-orange-400';
-      default: return 'text-muted-foreground';
+      case 'CONNECTED': 
+        return { 
+          color: 'text-success', 
+          bg: 'bg-success/10', 
+          border: 'border-success/30',
+          glow: 'shadow-[0_0_20px_hsl(142_76%_46%/0.2)]'
+        };
+      case 'DISCONNECTED': 
+        return { 
+          color: 'text-destructive', 
+          bg: 'bg-destructive/10', 
+          border: 'border-destructive/30',
+          glow: 'shadow-[0_0_20px_hsl(0_72%_51%/0.2)]'
+        };
+      case 'RINGING': 
+        return { 
+          color: 'text-warning', 
+          bg: 'bg-warning/10', 
+          border: 'border-warning/30',
+          glow: 'shadow-[0_0_20px_hsl(38_92%_50%/0.2)]'
+        };
+      case 'HOLD': 
+        return { 
+          color: 'text-info', 
+          bg: 'bg-info/10', 
+          border: 'border-info/30',
+          glow: 'shadow-[0_0_20px_hsl(199_89%_48%/0.2)]'
+        };
+      default: 
+        return { 
+          color: 'text-muted-foreground', 
+          bg: 'bg-muted', 
+          border: 'border-border',
+          glow: ''
+        };
     }
   };
 
   const getStateIcon = (state: string) => {
     switch (state) {
-      case 'CONNECTED': return <Phone className="w-5 h-5" />;
-      case 'DISCONNECTED': return <PhoneOff className="w-5 h-5" />;
-      case 'RINGING': return <Phone className="w-5 h-5 animate-pulse" />;
-      case 'HOLD': return <Phone className="w-5 h-5" />;
-      default: return <PhoneOff className="w-5 h-5" />;
+      case 'CONNECTED': return <Phone className="w-4 h-4" />;
+      case 'DISCONNECTED': return <PhoneOff className="w-4 h-4" />;
+      case 'RINGING': return <PhoneIncoming className="w-4 h-4 animate-pulse" />;
+      case 'HOLD': return <Pause className="w-4 h-4" />;
+      default: return <PhoneOff className="w-4 h-4" />;
     }
   };
 
-  const isConnected = turret.state === 'CONNECTED';
+  const config = getStateConfig(turret.state);
 
   return (
     <div className={`
-      relative overflow-hidden rounded-lg border 
-      ${isConnected ? 'border-primary/50 bg-card/80' : 'border-destructive/30 bg-card/40'}
-      backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:border-primary
+      relative overflow-hidden rounded-xl glass-card
+      transition-all duration-300 hover:scale-[1.02] 
+      ${config.glow}
       group
     `}>
-      {/* Glow effect */}
-      <div className={`
-        absolute inset-0 opacity-20 blur-xl transition-opacity
-        ${isConnected ? 'bg-primary' : 'bg-destructive'}
-        group-hover:opacity-30
-      `} />
+      {/* Gradient overlay on hover */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       
       {/* Content */}
-      <div className="relative p-5 space-y-4">
+      <div className="relative p-4 space-y-3">
         {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <h3 className="font-display text-lg font-bold text-foreground tracking-wide">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <h3 className="font-display text-sm font-semibold text-foreground truncate">
               {turret.turretName}
             </h3>
-            <div className={`flex items-center gap-2 ${getStateColor(turret.state)}`}>
+            <div className={`inline-flex items-center gap-1.5 mt-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.color} ${config.border} border`}>
               {getStateIcon(turret.state)}
-              <span className="text-sm font-medium uppercase tracking-wider">
-                {turret.state}
-              </span>
+              <span>{turret.state}</span>
             </div>
           </div>
           
           {/* Status indicator */}
           <div className={`
-            w-3 h-3 rounded-full animate-pulse
-            ${isConnected ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : 'bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.5)]'}
+            w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1
+            ${turret.state === 'CONNECTED' ? 'bg-success animate-pulse-soft' : ''}
+            ${turret.state === 'DISCONNECTED' ? 'bg-destructive' : ''}
+            ${turret.state === 'RINGING' ? 'bg-warning animate-pulse' : ''}
+            ${turret.state === 'HOLD' ? 'bg-info' : ''}
           `} />
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
         {/* Details Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <User className="w-4 h-4 text-primary" />
-            <div>
-              <p className="text-xs uppercase tracking-wider opacity-70">Party No</p>
-              <p className="text-sm font-medium text-foreground">{turret.partyNo}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Radio className="w-4 h-4 text-primary" />
-            <div>
-              <p className="text-xs uppercase tracking-wider opacity-70">Line No</p>
-              <p className="text-sm font-medium text-foreground">{turret.lineNo}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Server className="w-4 h-4 text-primary" />
-            <div>
-              <p className="text-xs uppercase tracking-wider opacity-70">Device</p>
-              <p className="text-sm font-medium text-foreground truncate max-w-[120px]">{turret.deviceName}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Hash className="w-4 h-4 text-primary" />
-            <div>
-              <p className="text-xs uppercase tracking-wider opacity-70">Call ID</p>
-              <p className="text-sm font-medium text-foreground">{turret.callId}</p>
-            </div>
-          </div>
+        <div className="grid grid-cols-2 gap-2">
+          <DetailItem icon={User} label="Party" value={turret.partyNo} />
+          <DetailItem icon={Radio} label="Line" value={turret.lineNo} />
+          <DetailItem icon={Server} label="Device" value={turret.deviceName} />
+          <DetailItem icon={Hash} label="Call ID" value={turret.callId} />
         </div>
       </div>
 
-      {/* Bottom accent line */}
-      <div className={`
-        h-1 w-full
-        ${isConnected 
-          ? 'bg-gradient-to-r from-transparent via-primary to-transparent' 
-          : 'bg-gradient-to-r from-transparent via-destructive to-transparent'}
-      `} />
+      {/* Bottom accent */}
+      <div className={`h-0.5 w-full bg-gradient-to-r from-transparent ${
+        turret.state === 'CONNECTED' ? 'via-success' : 
+        turret.state === 'DISCONNECTED' ? 'via-destructive' : 
+        turret.state === 'RINGING' ? 'via-warning' : 'via-info'
+      } to-transparent opacity-60`} />
     </div>
   );
 };
+
+const DetailItem = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
+  <div className="flex items-center gap-2 min-w-0">
+    <Icon className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+    <div className="min-w-0">
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-xs font-medium text-foreground truncate">{value}</p>
+    </div>
+  </div>
+);
 
 export default TurretCard;

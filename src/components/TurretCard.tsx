@@ -192,8 +192,8 @@ const TurretCard = ({ turret }: TurretCardProps) => {
         <span className="font-mono text-xs">{turret.ip}</span>
       </div>
 
-      {/* Channels Grid */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      {/* Channels Grid - Responsive: stack on small, side-by-side on larger */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
         {turret.channels.map((channel, index) => (
           <ChannelPanel key={channel.id} channel={channel} index={index} />
         ))}

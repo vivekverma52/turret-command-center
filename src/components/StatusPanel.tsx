@@ -1,4 +1,5 @@
 import { LucideIcon } from "lucide-react";
+import NumberFlow from "@number-flow/react";
 
 interface StatusItem {
   label: string;
@@ -24,7 +25,11 @@ const StatusPanel = ({ items }: StatusPanelProps) => {
               {item.label}
             </div>
             <p className={`font-display text-2xl md:text-3xl font-bold ${item.valueColor || "text-primary"}`}>
-              {item.value}
+              {typeof item.value === "number" ? (
+                <NumberFlow value={item.value} />
+              ) : (
+                item.value
+              )}
               {item.subValue && (
                 <span className="text-lg text-muted-foreground">{item.subValue}</span>
               )}

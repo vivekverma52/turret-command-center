@@ -1,0 +1,309 @@
+import { useState, useEffect } from "react";
+import { FileAudio, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+interface AuditData {
+  callId: string;
+  createdOn: string;
+  turretName: string;
+  lineName: string;
+  partyNumber: string;
+  state: string;
+  isFileAvailable: string;
+}
+
+// Mock data for demonstration
+const mockData: AuditData[] = [
+  {
+    callId: "CALL-001",
+    createdOn: "2025-01-15 10:30:00",
+    turretName: "Turret Alpha",
+    lineName: "Line 1",
+    partyNumber: "+1234567890",
+    state: "Conversation",
+    isFileAvailable: "true",
+  },
+  {
+    callId: "CALL-002",
+    createdOn: "2025-01-15 11:45:00",
+    turretName: "Turret Bravo",
+    lineName: "Line 2",
+    partyNumber: "+0987654321",
+    state: "Disconnected",
+    isFileAvailable: "false",
+  },
+  {
+    callId: "CALL-003",
+    createdOn: "2025-01-15 14:20:00",
+    turretName: "Turret Alpha",
+    lineName: "Line 3",
+    partyNumber: "+1122334455",
+    state: "Connected",
+    isFileAvailable: "true",
+  },
+];
+
+const AuditReport = () => {
+  const [allData, setAllData] = useState<AuditData[]>([]);
+  const [filteredData, setFilteredData] = useState<AuditData[]>([]);
+  const [filters, setFilters] = useState({
+    startDate: "",
+    endDate: "",
+    turretName: "",
+    lineName: "",
+    partyNumber: "",
+    state: "",
+  });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setAllData(mockData);
+      setFilteredData(mockData);
+      setLoading(false);
+    }, 500);
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [filters, allData]);
+
+  const applyFilters = () => {
+    let result = [...allData];
+
+    if (filters.startDate) {
+      result = result.filter((item) => {
+        const itemDate = item.createdOn.split(" ")[0];
+        return itemDate >= filters.startDate;
+      });
+    }
+
+    if (filters.endDate) {
+      result = result.filter((item) => {
+        const itemDate = item.createdOn.split(" ")[0];
+        return itemDate <= filters.endDate;
+      });
+    }
+
+    if (filters.turretName) {
+      result = result.filter((item) =>
+        item.turretName.toLowerCase().includes(filters.turretName.toLowerCase())
+      );
+    }
+
+    if (filters.lineName) {
+      result = result.filter((item) =>
+        item.lineName.toLowerCase().includes(filters.lineName.toLowerCase())
+      );
+    }
+
+    if (filters.partyNumber) {
+      result = result.filter((item) =>
+        item.partyNumber.toLowerCase().includes(filters.partyNumber.toLowerCase())
+      );
+    }
+
+    if (filters.state) {
+      result = result.filter((item) =>
+        item.state.toLowerCase().includes(filters.state.toLowerCase())
+      );
+    }
+
+    setFilteredData(result);
+  };
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      startDate: "",
+      endDate: "",
+      turretName: "",
+      lineName: "",
+      partyNumber: "",
+      state: "",
+    });
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString();
+  };
+
+  const getStateVariant = (state: string) => {
+    switch (state) {
+      case "Conversation":
+        return "bg-success/20 text-success border-success/30";
+      case "Connected":
+        return "bg-primary/20 text-primary border-primary/30";
+      case "Disconnected":
+        return "bg-destructive/20 text-destructive border-destructive/30";
+      default:
+        return "bg-secondary/50 text-muted-foreground";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <span className="text-muted-foreground text-sm">Loading audit data...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-primary/10 border border-primary/30">
+          <FileAudio className="h-6 w-6 text-primary" />
+        </div>
+        <div>
+          <h1 className="font-display text-2xl font-bold tracking-wider text-foreground">
+            Call Audit Report
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            View and filter call audit records
+          </p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="p-4 rounded-lg bg-card border border-border/30 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="space-y-2">
+            <Label className="text-muted-foreground text-xs">From Date</Label>
+            <Input
+              type="date"
+              name="startDate"
+              value={filters.startDate}
+              onChange={handleFilterChange}
+              className="bg-secondary/50 border-border/50 focus:border-primary"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-muted-foreground text-xs">To Date</Label>
+            <Input
+              type="date"
+              name="endDate"
+              value={filters.endDate}
+              onChange={handleFilterChange}
+              className="bg-secondary/50 border-border/50 focus:border-primary"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-muted-foreground text-xs">Turret</Label>
+            <Input
+              name="turretName"
+              placeholder="All turrets"
+              value={filters.turretName}
+              onChange={handleFilterChange}
+              className="bg-secondary/50 border-border/50 focus:border-primary"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-muted-foreground text-xs">Line</Label>
+            <Input
+              name="lineName"
+              placeholder="All lines"
+              value={filters.lineName}
+              onChange={handleFilterChange}
+              className="bg-secondary/50 border-border/50 focus:border-primary"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-muted-foreground text-xs">Party Number</Label>
+            <Input
+              name="partyNumber"
+              placeholder="All numbers"
+              value={filters.partyNumber}
+              onChange={handleFilterChange}
+              className="bg-secondary/50 border-border/50 focus:border-primary"
+            />
+          </div>
+          <div className="flex items-end">
+            <Button
+              variant="outline"
+              onClick={resetFilters}
+              className="w-full border-border/50 text-muted-foreground hover:text-foreground"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reset
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="border border-border/30 rounded-lg overflow-hidden bg-card/50">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-border/30 hover:bg-transparent">
+              <TableHead className="font-display text-xs uppercase tracking-wider text-primary">Timestamp</TableHead>
+              <TableHead className="font-display text-xs uppercase tracking-wider text-primary">Turret</TableHead>
+              <TableHead className="font-display text-xs uppercase tracking-wider text-primary">Line</TableHead>
+              <TableHead className="font-display text-xs uppercase tracking-wider text-primary">Party Number</TableHead>
+              <TableHead className="font-display text-xs uppercase tracking-wider text-primary">State</TableHead>
+              <TableHead className="font-display text-xs uppercase tracking-wider text-primary">Recording</TableHead>
+              <TableHead className="font-display text-xs uppercase tracking-wider text-primary">Call ID</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredData.length > 0 ? (
+              filteredData.map((item) => (
+                <TableRow key={item.callId} className="border-border/30 hover:bg-secondary/30">
+                  <TableCell className="text-sm text-muted-foreground">{formatDate(item.createdOn)}</TableCell>
+                  <TableCell className="font-semibold text-foreground">{item.turretName}</TableCell>
+                  <TableCell className="text-muted-foreground">{item.lineName}</TableCell>
+                  <TableCell className="font-mono text-sm text-muted-foreground">{item.partyNumber}</TableCell>
+                  <TableCell>
+                    <Badge className={getStateVariant(item.state)}>{item.state}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      className={
+                        item.isFileAvailable === "true"
+                          ? "bg-success/20 text-success border-success/30"
+                          : "bg-destructive/20 text-destructive border-destructive/30"
+                      }
+                    >
+                      {item.isFileAvailable === "true" ? "Available" : "Not Available"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-mono text-sm text-muted-foreground">{item.callId}</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  {allData.length === 0 ? "No audit data available" : "No records match your filters"}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+};
+
+export default AuditReport;

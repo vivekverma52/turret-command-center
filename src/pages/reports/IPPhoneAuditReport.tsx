@@ -1,0 +1,283 @@
+import { useState, useEffect } from "react";
+import { Phone, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+interface IPPhoneAuditData {
+  id: string;
+  callDisconnectDateTime: string;
+  deviceIdentifier: string;
+  callId: string;
+  partyNumber: string;
+  state: string;
+  createdOn: string;
+}
+
+// Mock data
+const mockData: IPPhoneAuditData[] = [
+  {
+    id: "1",
+    callDisconnectDateTime: "2025-01-15T10:30:00",
+    deviceIdentifier: "DEVICE-001",
+    callId: "CALL-001",
+    partyNumber: "+1234567890",
+    state: "ConnectionCleared",
+    createdOn: "2025-01-15T10:30:00",
+  },
+  {
+    id: "2",
+    callDisconnectDateTime: "2025-01-15T11:45:00",
+    deviceIdentifier: "DEVICE-002",
+    callId: "CALL-002",
+    partyNumber: "+0987654321",
+    state: "Connected",
+    createdOn: "2025-01-15T11:45:00",
+  },
+  {
+    id: "3",
+    callDisconnectDateTime: "2025-01-15T14:20:00",
+    deviceIdentifier: "DEVICE-003",
+    callId: "CALL-003",
+    partyNumber: "+1122334455",
+    state: "Disconnected",
+    createdOn: "2025-01-15T14:20:00",
+  },
+];
+
+const IPPhoneAuditReport = () => {
+  const [allData, setAllData] = useState<IPPhoneAuditData[]>([]);
+  const [filteredData, setFilteredData] = useState<IPPhoneAuditData[]>([]);
+  const [filters, setFilters] = useState({
+    startDate: "",
+    endDate: "",
+    deviceIdentifier: "",
+    callId: "",
+    state: "",
+  });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    setTimeout(() => {
+      setAllData(mockData);
+      setFilteredData(mockData);
+      setLoading(false);
+    }, 500);
+  }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [filters, allData]);
+
+  const applyFilters = () => {
+    let result = [...allData];
+
+    if (filters.startDate) {
+      result = result.filter((item) => {
+        const itemDate = new Date(item.callDisconnectDateTime).toISOString().split("T")[0];
+        return itemDate >= filters.startDate;
+      });
+    }
+
+    if (filters.endDate) {
+      result = result.filter((item) => {
+        const itemDate = new Date(item.callDisconnectDateTime).toISOString().split("T")[0];
+        return itemDate <= filters.endDate;
+      });
+    }
+
+    if (filters.deviceIdentifier) {
+      result = result.filter((item) =>
+        item.deviceIdentifier?.toLowerCase().includes(filters.deviceIdentifier.toLowerCase())
+      );
+    }
+
+    if (filters.callId) {
+      result = result.filter((item) =>
+        item.callId?.toLowerCase().includes(filters.callId.toLowerCase())
+      );
+    }
+
+    if (filters.state) {
+      result = result.filter((item) =>
+        item.state?.toLowerCase().includes(filters.state.toLowerCase())
+      );
+    }
+
+    setFilteredData(result);
+  };
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      startDate: "",
+      endDate: "",
+      deviceIdentifier: "",
+      callId: "",
+      state: "",
+    });
+  };
+
+  const formatDateTime = (timestamp: string) => {
+    if (!timestamp) return "N/A";
+    const date = new Date(timestamp);
+    return date.toLocaleString();
+  };
+
+  const getStateVariant = (state: string) => {
+    if (!state) return "bg-secondary/50 text-muted-foreground";
+
+    switch (state.toLowerCase()) {
+      case "connectioncleared":
+        return "bg-destructive/20 text-destructive border-destructive/30";
+      case "connected":
+        return "bg-success/20 text-success border-success/30";
+      case "disconnected":
+        return "bg-warning/20 text-warning border-warning/30";
+      default:
+        return "bg-secondary/50 text-muted-foreground";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <span className="text-muted-foreground text-sm">Loading IP phone audit data...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-lg bg-primary/10 border border-primary/30">
+          <Phone className="h-6 w-6 text-primary" />
+        </div>
+        <div>
+          <h1 className="font-display text-2xl font-bold tracking-wider text-foreground">
+            IP Phone Audit Report
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            View and filter IP phone audit records
+          </p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="p-4 rounded-lg bg-card border border-border/30 space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="space-y-2">
+            <Label className="text-muted-foreground text-xs">From Date</Label>
+            <Input
+              type="date"
+              name="startDate"
+              value={filters.startDate}
+              onChange={handleFilterChange}
+              className="bg-secondary/50 border-border/50 focus:border-primary"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-muted-foreground text-xs">To Date</Label>
+            <Input
+              type="date"
+              name="endDate"
+              value={filters.endDate}
+              onChange={handleFilterChange}
+              className="bg-secondary/50 border-border/50 focus:border-primary"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-muted-foreground text-xs">Device ID</Label>
+            <Input
+              name="deviceIdentifier"
+              placeholder="Filter device"
+              value={filters.deviceIdentifier}
+              onChange={handleFilterChange}
+              className="bg-secondary/50 border-border/50 focus:border-primary"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-muted-foreground text-xs">Call ID</Label>
+            <Input
+              name="callId"
+              placeholder="Filter call ID"
+              value={filters.callId}
+              onChange={handleFilterChange}
+              className="bg-secondary/50 border-border/50 focus:border-primary"
+            />
+          </div>
+          <div className="flex items-end">
+            <Button
+              variant="outline"
+              onClick={resetFilters}
+              className="w-full border-border/50 text-muted-foreground hover:text-foreground"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Reset
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="border border-border/30 rounded-lg overflow-hidden bg-card/50">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-border/30 hover:bg-transparent">
+              <TableHead className="font-display text-xs uppercase tracking-wider text-primary">Disconnect Time</TableHead>
+              <TableHead className="font-display text-xs uppercase tracking-wider text-primary">Device ID</TableHead>
+              <TableHead className="font-display text-xs uppercase tracking-wider text-primary">Call ID</TableHead>
+              <TableHead className="font-display text-xs uppercase tracking-wider text-primary">Party Number</TableHead>
+              <TableHead className="font-display text-xs uppercase tracking-wider text-primary">State</TableHead>
+              <TableHead className="font-display text-xs uppercase tracking-wider text-primary">Created On</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredData.length > 0 ? (
+              filteredData.map((item) => (
+                <TableRow key={item.id} className="border-border/30 hover:bg-secondary/30">
+                  <TableCell className="text-sm text-muted-foreground">{formatDateTime(item.callDisconnectDateTime)}</TableCell>
+                  <TableCell className="font-mono text-sm text-foreground">{item.deviceIdentifier || "N/A"}</TableCell>
+                  <TableCell className="font-mono text-sm text-muted-foreground">{item.callId || "N/A"}</TableCell>
+                  <TableCell className="text-muted-foreground">{item.partyNumber || "N/A"}</TableCell>
+                  <TableCell>
+                    <Badge className={getStateVariant(item.state)}>{item.state || "UNKNOWN"}</Badge>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {item.createdOn ? new Date(item.createdOn).toLocaleString() : "N/A"}
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  {allData.length === 0 ? "No audit data available" : "No records match your filters"}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+};
+
+export default IPPhoneAuditReport;

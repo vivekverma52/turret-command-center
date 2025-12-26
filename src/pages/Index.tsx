@@ -1,5 +1,5 @@
 import TurretCard from "@/components/TurretCard";
-import { Shield } from "lucide-react";
+import { Radio, Zap, Shield, Target } from "lucide-react";
 
 const turrets = [
   {
@@ -107,65 +107,84 @@ const turrets = [
 ];
 
 const Index = () => {
+  const totalTurrets = turrets.length;
   const totalChannels = turrets.length * 2;
   const onlineChannels = turrets.reduce(
     (acc, t) => acc + t.channels.filter((c) => c.status === "online").length,
     0
   );
+  const offlineChannels = totalChannels - onlineChannels;
+  const activeShields = turrets.reduce(
+    (acc, t) => acc + t.channels.filter((c) => c.shieldActive).length,
+    0
+  );
+  const targetsLocked = turrets.reduce(
+    (acc, t) => acc + t.channels.filter((c) => c.targetLocked).length,
+    0
+  );
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/50 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center glow-cyan">
-              <Shield className="w-5 h-5 text-primary" />
+    <div className="min-h-screen bg-background px-4 md:px-6 py-6 md:py-8">
+      {/* Status Summary Panel */}
+      <div className="max-w-4xl mx-auto mb-8">
+        <div className="card-tactical rounded-lg p-4 md:p-6">
+          <h2 className="font-display text-lg md:text-xl font-bold text-foreground tracking-wider text-center mb-6">
+            SYSTEM STATUS OVERVIEW
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {/* Total Turrets */}
+            <div className="bg-secondary/50 rounded-lg p-3 md:p-4 text-center">
+              <div className="flex items-center justify-center gap-2 text-muted-foreground text-[10px] md:text-xs uppercase tracking-wider mb-2">
+                <Radio className="w-3 h-3 md:w-4 md:h-4 text-primary" />
+                Total Turrets
+              </div>
+              <p className="font-display text-2xl md:text-3xl font-bold text-primary text-glow">
+                {totalTurrets}
+              </p>
             </div>
-            <div>
-              <h1 className="font-display text-xl font-bold tracking-wider text-foreground">
-                DEFENSE COMMAND
-              </h1>
-              <p className="text-xs text-muted-foreground uppercase tracking-widest">
-                Turret Control System v2.4
+
+            {/* Live Channels */}
+            <div className="bg-secondary/50 rounded-lg p-3 md:p-4 text-center">
+              <div className="flex items-center justify-center gap-2 text-muted-foreground text-[10px] md:text-xs uppercase tracking-wider mb-2">
+                <Zap className="w-3 h-3 md:w-4 md:h-4 text-success" />
+                Live Channels
+              </div>
+              <p className="font-display text-2xl md:text-3xl font-bold text-success">
+                {onlineChannels}<span className="text-lg text-muted-foreground">/{totalChannels}</span>
+              </p>
+            </div>
+
+            {/* Active Shields */}
+            <div className="bg-secondary/50 rounded-lg p-3 md:p-4 text-center">
+              <div className="flex items-center justify-center gap-2 text-muted-foreground text-[10px] md:text-xs uppercase tracking-wider mb-2">
+                <Shield className="w-3 h-3 md:w-4 md:h-4 text-primary" />
+                Active Shields
+              </div>
+              <p className="font-display text-2xl md:text-3xl font-bold text-primary text-glow">
+                {activeShields}
+              </p>
+            </div>
+
+            {/* Targets Locked */}
+            <div className="bg-secondary/50 rounded-lg p-3 md:p-4 text-center">
+              <div className="flex items-center justify-center gap-2 text-muted-foreground text-[10px] md:text-xs uppercase tracking-wider mb-2">
+                <Target className="w-3 h-3 md:w-4 md:h-4 text-destructive" />
+                Targets Locked
+              </div>
+              <p className="font-display text-2xl md:text-3xl font-bold text-destructive">
+                {targetsLocked}
               </p>
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
-        {/* Section Title */}
-        <div className="mb-8">
-          <h2 className="font-display text-2xl font-bold text-foreground tracking-wider mb-2">
-            ACTIVE TURRETS
-          </h2>
-          <div className="flex items-center gap-4">
-            <div className="h-px flex-1 bg-gradient-to-r from-primary/50 to-transparent" />
-            <span className="text-sm text-muted-foreground font-mono">
-              {onlineChannels}/{totalChannels} CHANNELS ONLINE
-            </span>
-          </div>
-        </div>
-
-        {/* Turret Grid - 3 turrets in a single row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {turrets.map((turret) => (
-            <TurretCard key={turret.id} turret={turret} />
-          ))}
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-border/30 mt-auto">
-        <div className="container mx-auto px-6 py-4">
-          <p className="text-center text-xs text-muted-foreground font-mono">
-            SYSTEM STATUS: OPERATIONAL • ENCRYPTED CONNECTION •{" "}
-            {new Date().toLocaleDateString()}
-          </p>
-        </div>
-      </footer>
+      {/* Turret Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        {turrets.map((turret) => (
+          <TurretCard key={turret.id} turret={turret} />
+        ))}
+      </div>
     </div>
   );
 };

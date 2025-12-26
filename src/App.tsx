@@ -5,16 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
 import Index from "./pages/Index";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
-
-// Placeholder pages
-const Analytics = () => (
-  <div className="p-6">
-    <h2 className="font-display text-2xl font-bold text-foreground tracking-wider">Analytics Coming Soon</h2>
-  </div>
-);
 
 const Alerts = () => (
   <div className="p-6">

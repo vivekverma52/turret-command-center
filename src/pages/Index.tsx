@@ -1,4 +1,5 @@
 import TurretCard from "@/components/TurretCard";
+import StatusPanel from "@/components/StatusPanel";
 import { Radio, Zap, Shield, Target } from "lucide-react";
 
 const turrets = [
@@ -127,56 +128,39 @@ const Index = () => {
     <div className="min-h-screen bg-background px-4 md:px-6 py-6 md:py-8">
       {/* Status Summary Panel */}
       <div className="max-w-4xl mx-auto mb-8">
-        <div className="card-tactical rounded-lg p-4 md:p-6">
-          <h2 className="font-display text-lg md:text-xl font-bold text-foreground tracking-wider text-center mb-6">
-            SYSTEM STATUS OVERVIEW
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            {/* Total Turrets */}
-            <div className="bg-secondary/50 rounded-lg p-3 md:p-4 text-center">
-              <div className="flex items-center justify-center gap-2 text-muted-foreground text-[10px] md:text-xs uppercase tracking-wider mb-2">
-                <Radio className="w-3 h-3 md:w-4 md:h-4 text-primary" />
-                Total Turrets
-              </div>
-              <p className="font-display text-2xl md:text-3xl font-bold text-primary text-glow">
-                {totalTurrets}
-              </p>
-            </div>
-
-            {/* Live Channels */}
-            <div className="bg-secondary/50 rounded-lg p-3 md:p-4 text-center">
-              <div className="flex items-center justify-center gap-2 text-muted-foreground text-[10px] md:text-xs uppercase tracking-wider mb-2">
-                <Zap className="w-3 h-3 md:w-4 md:h-4 text-success" />
-                Live Channels
-              </div>
-              <p className="font-display text-2xl md:text-3xl font-bold text-success">
-                {onlineChannels}<span className="text-lg text-muted-foreground">/{totalChannels}</span>
-              </p>
-            </div>
-
-            {/* Active Shields */}
-            <div className="bg-secondary/50 rounded-lg p-3 md:p-4 text-center">
-              <div className="flex items-center justify-center gap-2 text-muted-foreground text-[10px] md:text-xs uppercase tracking-wider mb-2">
-                <Shield className="w-3 h-3 md:w-4 md:h-4 text-primary" />
-                Active Shields
-              </div>
-              <p className="font-display text-2xl md:text-3xl font-bold text-primary text-glow">
-                {activeShields}
-              </p>
-            </div>
-
-            {/* Targets Locked */}
-            <div className="bg-secondary/50 rounded-lg p-3 md:p-4 text-center">
-              <div className="flex items-center justify-center gap-2 text-muted-foreground text-[10px] md:text-xs uppercase tracking-wider mb-2">
-                <Target className="w-3 h-3 md:w-4 md:h-4 text-destructive" />
-                Targets Locked
-              </div>
-              <p className="font-display text-2xl md:text-3xl font-bold text-destructive">
-                {targetsLocked}
-              </p>
-            </div>
-          </div>
-        </div>
+        <StatusPanel
+          items={[
+            {
+              label: "Total Turrets",
+              value: totalTurrets,
+              icon: Radio,
+              iconColor: "text-primary",
+              valueColor: "text-primary text-glow",
+            },
+            {
+              label: "Live Channels",
+              value: onlineChannels,
+              subValue: `/${totalChannels}`,
+              icon: Zap,
+              iconColor: "text-success",
+              valueColor: "text-success",
+            },
+            {
+              label: "Active Shields",
+              value: activeShields,
+              icon: Shield,
+              iconColor: "text-primary",
+              valueColor: "text-primary text-glow",
+            },
+            {
+              label: "Targets Locked",
+              value: targetsLocked,
+              icon: Target,
+              iconColor: "text-destructive",
+              valueColor: "text-destructive",
+            },
+          ]}
+        />
       </div>
 
       {/* Turret Grid */}

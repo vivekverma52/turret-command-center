@@ -26,10 +26,14 @@ interface AppSidebarProps {
 const AppSidebar = ({ items }: AppSidebarProps) => {
   const sidebar = useSidebar();
   const collapsed = sidebar?.state === "collapsed";
+  const isMobile = sidebar?.isMobile;
   const location = useLocation();
   const currentPath = location.pathname;
 
   const isActive = (path: string) => currentPath === path;
+  
+  // On mobile, always show text (sidebar opens as sheet)
+  const showText = isMobile || !collapsed;
 
   return (
     <Sidebar
@@ -63,7 +67,7 @@ const AppSidebar = ({ items }: AppSidebarProps) => {
                       activeClassName="text-primary"
                     >
                       <item.icon className="w-5 h-5 shrink-0" />
-                      {!collapsed && (
+                      {showText && (
                         <span className="font-display text-sm tracking-wider">
                           {item.title}
                         </span>

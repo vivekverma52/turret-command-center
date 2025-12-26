@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import TurretCard from "@/components/TurretCard";
 import StatusPanel from "@/components/StatusPanel";
 import { Radio, Zap, Shield, Target } from "lucide-react";
@@ -120,21 +121,28 @@ const turrets = [
 ];
 
 const Index = () => {
-  const totalTurrets = turrets.length;
+  // Dynamic stats that update periodically to show NumberFlow animation
+  const [stats, setStats] = useState({
+    totalTurrets: 3,
+    liveChannels: 4,
+    activeShields: 4,
+    targetsLocked: 1,
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStats({
+        totalTurrets: Math.floor(Math.random() * 5) + 2,
+        liveChannels: Math.floor(Math.random() * 6) + 1,
+        activeShields: Math.floor(Math.random() * 6) + 1,
+        targetsLocked: Math.floor(Math.random() * 4),
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const totalChannels = turrets.length * 2;
-  const onlineChannels = turrets.reduce(
-    (acc, t) => acc + t.channels.filter((c) => c.status === "online").length,
-    0
-  );
-  const offlineChannels = totalChannels - onlineChannels;
-  const activeShields = turrets.reduce(
-    (acc, t) => acc + t.channels.filter((c) => c.shieldActive).length,
-    0
-  );
-  const targetsLocked = turrets.reduce(
-    (acc, t) => acc + t.channels.filter((c) => c.targetLocked).length,
-    0
-  );
 
   return (
     <div className="h-full bg-background px-4 md:px-6 py-6 md:py-8">
@@ -144,14 +152,14 @@ const Index = () => {
           items={[
             {
               label: "Total Turrets",
-              value: totalTurrets,
+              value: stats.totalTurrets,
               icon: Radio,
               iconColor: "text-primary",
               valueColor: "text-primary text-glow",
             },
             {
               label: "Live Channels",
-              value: onlineChannels,
+              value: stats.liveChannels,
               subValue: `/${totalChannels}`,
               icon: Zap,
               iconColor: "text-success",
@@ -159,14 +167,14 @@ const Index = () => {
             },
             {
               label: "Active Shields",
-              value: activeShields,
+              value: stats.activeShields,
               icon: Shield,
               iconColor: "text-primary",
               valueColor: "text-primary text-glow",
             },
             {
               label: "Targets Locked",
-              value: targetsLocked,
+              value: stats.targetsLocked,
               icon: Target,
               iconColor: "text-destructive",
               valueColor: "text-destructive",

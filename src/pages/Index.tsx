@@ -125,7 +125,7 @@ const Index = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background px-4 md:px-6 py-6 md:py-8">
+    <div className="h-full bg-background px-4 md:px-6 py-6 md:py-8">
       {/* Status Summary Panel */}
       <div className="max-w-4xl mx-auto mb-8">
         <StatusPanel

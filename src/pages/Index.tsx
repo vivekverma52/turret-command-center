@@ -86,8 +86,8 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Turret Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Turret Grid - 3 turrets in a single row */}
+        <div className="grid grid-cols-3 gap-6">
           {turrets.map((turret) => (
             <TurretCard key={turret.id} turret={turret} />
           ))}

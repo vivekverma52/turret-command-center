@@ -33,10 +33,11 @@ const AppSidebar = ({ items }: AppSidebarProps) => {
 
   return (
     <Sidebar
-      className={`${collapsed ? "w-14" : "w-56"} bg-card border-r border-border/50 transition-all duration-300`}
+      className="bg-card border-r border-border/50"
       collapsible="icon"
     >
-      <div className="p-3 border-b border-border/50">
+      {/* Desktop sidebar trigger - hidden on mobile */}
+      <div className="hidden md:block p-3 border-b border-border/50">
         <SidebarTrigger className="text-primary hover:bg-primary/10" />
       </div>
 

@@ -4,6 +4,8 @@ interface Channel {
   id: string;
   name: string;
   status: "online" | "offline";
+  isActive: boolean;
+  ringState: "ringing" | "idle";
   azimuth: number;
   elevation: number;
   ammunition: number;
@@ -33,20 +35,27 @@ const ChannelPanel = ({ channel, index }: { channel: Channel; index: number }) =
   return (
     <div className="bg-secondary/30 rounded-lg p-4 border border-border/30">
       {/* Channel Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Waves className="w-4 h-4 text-primary" />
-          <span className="font-display text-sm font-bold tracking-wider text-foreground">
-            {channel.name}
-          </span>
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start gap-2">
+          <Waves className="w-4 h-4 text-primary mt-0.5" />
+          <div>
+            <span className="font-display text-sm font-bold tracking-wider text-foreground block">
+              {channel.name}
+            </span>
+            <span className={`text-[10px] uppercase tracking-wider font-semibold ${
+              channel.isActive ? "text-success" : "text-muted-foreground"
+            }`}>
+              {channel.isActive ? "Active" : "Inactive"}
+            </span>
+          </div>
         </div>
-        <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
-          isOnline 
-            ? "bg-success/20 text-success" 
-            : "bg-destructive/20 text-destructive"
+        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+          channel.ringState === "ringing" 
+            ? "bg-warning/20 text-warning" 
+            : "bg-secondary/50 text-muted-foreground"
         }`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? "bg-success animate-pulse" : "bg-destructive"}`} />
-          {channel.status}
+          <span className={`w-1.5 h-1.5 rounded-full ${channel.ringState === "ringing" ? "bg-warning animate-pulse" : "bg-muted-foreground"}`} />
+          {channel.ringState === "ringing" ? "Ringing" : "Idle"}
         </div>
       </div>
 

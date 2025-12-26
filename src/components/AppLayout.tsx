@@ -8,7 +8,6 @@ import {
   Settings, 
   BarChart3, 
   Bell, 
-  FileText,
   FileAudio,
   Phone,
   PhoneOff,
@@ -18,31 +17,13 @@ import {
 const navItems: NavItem[] = [
   { title: "Turrets", url: "/", icon: Crosshair },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
-  { 
-    title: "Reports", 
-    url: "/reports", 
-    icon: FileText,
-    children: [
-      { title: "Call Audit", url: "/reports/call-audit", icon: FileAudio },
-      { title: "IP Phone Audit", url: "/reports/ip-phone-audit", icon: Phone },
-      { title: "IP Phone Disconnect", url: "/reports/ip-phone-disconnect", icon: PhoneOff },
-      { title: "Turret Disconnect", url: "/reports/turret-disconnect", icon: Radio },
-    ]
-  },
+  { title: "Call Audit", url: "/reports/call-audit", icon: FileAudio },
+  { title: "IP Phone Audit", url: "/reports/ip-phone-audit", icon: Phone },
+  { title: "IP Disconnect", url: "/reports/ip-phone-disconnect", icon: PhoneOff },
+  { title: "Turret Disconnect", url: "/reports/turret-disconnect", icon: Radio },
   { title: "Alerts", url: "/alerts", icon: Bell },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
-
-// Flatten nav items for finding current page title
-const flattenNavItems = (items: NavItem[]): NavItem[] => {
-  return items.reduce<NavItem[]>((acc, item) => {
-    acc.push(item);
-    if (item.children) {
-      acc.push(...item.children);
-    }
-    return acc;
-  }, []);
-};
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -50,8 +31,7 @@ interface AppLayoutProps {
 
 const AppLayout = ({ children }: AppLayoutProps) => {
   const location = useLocation();
-  const allItems = flattenNavItems(navItems);
-  const currentNav = allItems.find((item) => item.url === location.pathname);
+  const currentNav = navItems.find((item) => item.url === location.pathname);
   const currentTitle = currentNav?.title || "Dashboard";
   const CurrentIcon = currentNav?.icon;
 

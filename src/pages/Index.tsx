@@ -6,50 +6,113 @@ const turrets = [
     id: "T001",
     name: "Turret Alpha",
     ip: "192.168.1.101",
-    status: "online" as const,
-    azimuth: 45,
-    elevation: 15,
-    ammunition: 750,
-    maxAmmunition: 1000,
-    power: 85,
-    temperature: 42,
     lastActivity: new Date().toISOString(),
-    targetLocked: true,
-    shieldActive: true,
+    channels: [
+      {
+        id: "T001-CH1",
+        name: "Channel 1",
+        status: "online" as const,
+        azimuth: 45,
+        elevation: 15,
+        ammunition: 750,
+        maxAmmunition: 1000,
+        power: 85,
+        temperature: 42,
+        targetLocked: true,
+        shieldActive: true,
+      },
+      {
+        id: "T001-CH2",
+        name: "Channel 2",
+        status: "online" as const,
+        azimuth: 120,
+        elevation: 25,
+        ammunition: 600,
+        maxAmmunition: 1000,
+        power: 78,
+        temperature: 38,
+        targetLocked: false,
+        shieldActive: true,
+      },
+    ] as [typeof turrets[0]["channels"][0], typeof turrets[0]["channels"][0]],
   },
   {
     id: "T002",
     name: "Turret Beta",
     ip: "192.168.1.102",
-    status: "offline" as const,
-    azimuth: 0,
-    elevation: 0,
-    ammunition: 0,
-    maxAmmunition: 1000,
-    power: 0,
-    temperature: 25,
     lastActivity: new Date().toISOString(),
-    targetLocked: false,
-    shieldActive: false,
+    channels: [
+      {
+        id: "T002-CH1",
+        name: "Channel 1",
+        status: "offline" as const,
+        azimuth: 0,
+        elevation: 0,
+        ammunition: 0,
+        maxAmmunition: 1000,
+        power: 0,
+        temperature: 25,
+        targetLocked: false,
+        shieldActive: false,
+      },
+      {
+        id: "T002-CH2",
+        name: "Channel 2",
+        status: "offline" as const,
+        azimuth: 0,
+        elevation: 0,
+        ammunition: 0,
+        maxAmmunition: 1000,
+        power: 0,
+        temperature: 25,
+        targetLocked: false,
+        shieldActive: false,
+      },
+    ] as [typeof turrets[0]["channels"][0], typeof turrets[0]["channels"][0]],
   },
   {
     id: "T003",
     name: "Turret Gamma",
     ip: "192.168.1.103",
-    status: "online" as const,
-    azimuth: 180,
-    elevation: 30,
-    ammunition: 250,
-    maxAmmunition: 1000,
-    power: 65,
-    temperature: 78,
     lastActivity: new Date().toISOString(),
-    targetLocked: false,
-    shieldActive: true,
+    channels: [
+      {
+        id: "T003-CH1",
+        name: "Channel 1",
+        status: "online" as const,
+        azimuth: 180,
+        elevation: 30,
+        ammunition: 250,
+        maxAmmunition: 1000,
+        power: 65,
+        temperature: 78,
+        targetLocked: false,
+        shieldActive: true,
+      },
+      {
+        id: "T003-CH2",
+        name: "Channel 2",
+        status: "offline" as const,
+        azimuth: 90,
+        elevation: 10,
+        ammunition: 500,
+        maxAmmunition: 1000,
+        power: 0,
+        temperature: 30,
+        targetLocked: false,
+        shieldActive: false,
+      },
+    ] as [typeof turrets[0]["channels"][0], typeof turrets[0]["channels"][0]],
   },
 ];
 
 const Index = () => {
+  const totalChannels = turrets.length * 2;
+  const onlineChannels = turrets.reduce(
+    (acc, t) => acc + t.channels.filter((c) => c.status === "online").length,
+    0
+  );
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -81,7 +144,7 @@ const Index = () => {
           <div className="flex items-center gap-4">
             <div className="h-px flex-1 bg-gradient-to-r from-primary/50 to-transparent" />
             <span className="text-sm text-muted-foreground font-mono">
-              {turrets.filter(t => t.status === "online").length}/{turrets.length} ONLINE
+              {onlineChannels}/{totalChannels} CHANNELS ONLINE
             </span>
           </div>
         </div>
@@ -98,7 +161,8 @@ const Index = () => {
       <footer className="border-t border-border/30 mt-auto">
         <div className="container mx-auto px-6 py-4">
           <p className="text-center text-xs text-muted-foreground font-mono">
-            SYSTEM STATUS: OPERATIONAL • ENCRYPTED CONNECTION • {new Date().toLocaleDateString()}
+            SYSTEM STATUS: OPERATIONAL • ENCRYPTED CONNECTION •{" "}
+            {new Date().toLocaleDateString()}
           </p>
         </div>
       </footer>

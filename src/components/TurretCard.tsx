@@ -1,144 +1,172 @@
-import { 
-  Phone, 
-  PhoneOff, 
-  Radio, 
-  Server, 
-  Hash, 
-  User,
-  PhoneIncoming,
-  Pause
-} from 'lucide-react';
+import { Shield, Target, Zap, Thermometer, Crosshair, Radio } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
-interface TurretData {
-  turretName: string;
-  partyNo: string;
-  lineNo: string;
-  deviceName: string;
-  callId: string;
-  state: 'CONNECTED' | 'DISCONNECTED' | 'RINGING' | 'HOLD';
+interface Turret {
+  id: string;
+  name: string;
+  ip: string;
+  status: "online" | "offline";
+  azimuth: number;
+  elevation: number;
+  ammunition: number;
+  maxAmmunition: number;
+  power: number;
+  temperature: number;
+  lastActivity: string;
+  targetLocked: boolean;
+  shieldActive: boolean;
 }
 
 interface TurretCardProps {
-  turret: TurretData;
+  turret: Turret;
 }
 
 const TurretCard = ({ turret }: TurretCardProps) => {
-  const getStateConfig = (state: string) => {
-    switch (state) {
-      case 'CONNECTED': 
-        return { 
-          color: 'text-success', 
-          bg: 'bg-success/10', 
-          border: 'border-success/30',
-          glow: 'shadow-[0_0_20px_hsl(142_76%_46%/0.2)]'
-        };
-      case 'DISCONNECTED': 
-        return { 
-          color: 'text-destructive', 
-          bg: 'bg-destructive/10', 
-          border: 'border-destructive/30',
-          glow: 'shadow-[0_0_20px_hsl(0_72%_51%/0.2)]'
-        };
-      case 'RINGING': 
-        return { 
-          color: 'text-warning', 
-          bg: 'bg-warning/10', 
-          border: 'border-warning/30',
-          glow: 'shadow-[0_0_20px_hsl(38_92%_50%/0.2)]'
-        };
-      case 'HOLD': 
-        return { 
-          color: 'text-info', 
-          bg: 'bg-info/10', 
-          border: 'border-info/30',
-          glow: 'shadow-[0_0_20px_hsl(199_89%_48%/0.2)]'
-        };
-      default: 
-        return { 
-          color: 'text-muted-foreground', 
-          bg: 'bg-muted', 
-          border: 'border-border',
-          glow: ''
-        };
-    }
-  };
-
-  const getStateIcon = (state: string) => {
-    switch (state) {
-      case 'CONNECTED': return <Phone className="w-4 h-4" />;
-      case 'DISCONNECTED': return <PhoneOff className="w-4 h-4" />;
-      case 'RINGING': return <PhoneIncoming className="w-4 h-4 animate-pulse" />;
-      case 'HOLD': return <Pause className="w-4 h-4" />;
-      default: return <PhoneOff className="w-4 h-4" />;
-    }
-  };
-
-  const config = getStateConfig(turret.state);
+  const ammoPercentage = (turret.ammunition / turret.maxAmmunition) * 100;
+  const isOnline = turret.status === "online";
 
   return (
-    <div className={`
-      relative overflow-hidden rounded-xl glass-card
-      transition-all duration-300 hover:scale-[1.02] 
-      ${config.glow}
-      group
-    `}>
-      {/* Gradient overlay on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+    <div className="card-tactical rounded-lg p-6 relative overflow-hidden group transition-all duration-300 hover:glow-cyan">
+      {/* Scan line effect */}
+      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       
-      {/* Content */}
-      <div className="relative p-4 space-y-3">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <h3 className="font-display text-sm font-semibold text-foreground truncate">
-              {turret.turretName}
-            </h3>
-            <div className={`inline-flex items-center gap-1.5 mt-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.color} ${config.border} border`}>
-              {getStateIcon(turret.state)}
-              <span>{turret.state}</span>
-            </div>
-          </div>
-          
-          {/* Status indicator */}
-          <div className={`
-            w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1
-            ${turret.state === 'CONNECTED' ? 'bg-success animate-pulse-soft' : ''}
-            ${turret.state === 'DISCONNECTED' ? 'bg-destructive' : ''}
-            ${turret.state === 'RINGING' ? 'bg-warning animate-pulse' : ''}
-            ${turret.state === 'HOLD' ? 'bg-info' : ''}
-          `} />
+      {/* Header */}
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h3 className="font-display text-xl font-bold text-foreground tracking-wider">
+            {turret.name}
+          </h3>
+          <p className="text-muted-foreground text-sm font-body mt-1">
+            ID: {turret.id}
+          </p>
         </div>
-
-        {/* Divider */}
-        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
-        {/* Details Grid */}
-        <div className="grid grid-cols-2 gap-2">
-          <DetailItem icon={User} label="Party" value={turret.partyNo} />
-          <DetailItem icon={Radio} label="Line" value={turret.lineNo} />
-          <DetailItem icon={Server} label="Device" value={turret.deviceName} />
-          <DetailItem icon={Hash} label="Call ID" value={turret.callId} />
+        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${
+          isOnline 
+            ? "bg-success/20 text-success glow-success" 
+            : "bg-destructive/20 text-destructive glow-destructive"
+        }`}>
+          <span className={`w-2 h-2 rounded-full ${isOnline ? "bg-success animate-pulse" : "bg-destructive"}`} />
+          {turret.status}
         </div>
       </div>
 
-      {/* Bottom accent */}
-      <div className={`h-0.5 w-full bg-gradient-to-r from-transparent ${
-        turret.state === 'CONNECTED' ? 'via-success' : 
-        turret.state === 'DISCONNECTED' ? 'via-destructive' : 
-        turret.state === 'RINGING' ? 'via-warning' : 'via-info'
-      } to-transparent opacity-60`} />
+      {/* Network Info */}
+      <div className="flex items-center gap-2 mb-6 text-muted-foreground">
+        <Radio className="w-4 h-4 text-primary" />
+        <span className="font-mono text-sm">{turret.ip}</span>
+      </div>
+
+      {/* Position Data */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="bg-secondary/50 rounded-lg p-3">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-wider mb-1">
+            <Crosshair className="w-3 h-3" />
+            Azimuth
+          </div>
+          <p className="font-display text-2xl font-bold text-primary text-glow">
+            {turret.azimuth}°
+          </p>
+        </div>
+        <div className="bg-secondary/50 rounded-lg p-3">
+          <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-wider mb-1">
+            <Crosshair className="w-3 h-3 rotate-90" />
+            Elevation
+          </div>
+          <p className="font-display text-2xl font-bold text-primary text-glow">
+            {turret.elevation}°
+          </p>
+        </div>
+      </div>
+
+      {/* Stats Bars */}
+      <div className="space-y-4 mb-6">
+        {/* Ammunition */}
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs uppercase tracking-wider text-muted-foreground">Ammunition</span>
+            <span className="font-mono text-sm text-foreground">
+              {turret.ammunition}/{turret.maxAmmunition}
+            </span>
+          </div>
+          <div className="h-2 bg-secondary rounded-full overflow-hidden">
+            <div 
+              className={`h-full rounded-full transition-all duration-500 ${
+                ammoPercentage > 50 ? "bg-success" : ammoPercentage > 20 ? "bg-warning" : "bg-destructive"
+              }`}
+              style={{ width: `${ammoPercentage}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Power */}
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center gap-2">
+              <Zap className="w-3 h-3 text-warning" />
+              <span className="text-xs uppercase tracking-wider text-muted-foreground">Power</span>
+            </div>
+            <span className="font-mono text-sm text-foreground">{turret.power}%</span>
+          </div>
+          <div className="h-2 bg-secondary rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-warning to-primary rounded-full transition-all duration-500"
+              style={{ width: `${turret.power}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Temperature */}
+        <div>
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center gap-2">
+              <Thermometer className="w-3 h-3 text-destructive" />
+              <span className="text-xs uppercase tracking-wider text-muted-foreground">Temperature</span>
+            </div>
+            <span className="font-mono text-sm text-foreground">{turret.temperature}°C</span>
+          </div>
+          <div className="h-2 bg-secondary rounded-full overflow-hidden">
+            <div 
+              className={`h-full rounded-full transition-all duration-500 ${
+                turret.temperature < 50 ? "bg-success" : turret.temperature < 80 ? "bg-warning" : "bg-destructive"
+              }`}
+              style={{ width: `${Math.min(turret.temperature, 100)}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Status Indicators */}
+      <div className="flex gap-3">
+        <div className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border transition-all duration-300 ${
+          turret.targetLocked 
+            ? "border-destructive/50 bg-destructive/10 text-destructive" 
+            : "border-border/50 bg-secondary/30 text-muted-foreground"
+        }`}>
+          <Target className={`w-4 h-4 ${turret.targetLocked ? "animate-pulse" : ""}`} />
+          <span className="text-xs uppercase tracking-wider font-semibold">
+            {turret.targetLocked ? "Locked" : "No Target"}
+          </span>
+        </div>
+        <div className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border transition-all duration-300 ${
+          turret.shieldActive 
+            ? "border-primary/50 bg-primary/10 text-primary glow-cyan" 
+            : "border-border/50 bg-secondary/30 text-muted-foreground"
+        }`}>
+          <Shield className={`w-4 h-4 ${turret.shieldActive ? "animate-pulse" : ""}`} />
+          <span className="text-xs uppercase tracking-wider font-semibold">
+            {turret.shieldActive ? "Shield On" : "Shield Off"}
+          </span>
+        </div>
+      </div>
+
+      {/* Last Activity */}
+      <div className="mt-4 pt-4 border-t border-border/30">
+        <p className="text-xs text-muted-foreground">
+          Last Activity: <span className="text-foreground font-mono">{new Date(turret.lastActivity).toLocaleString()}</span>
+        </p>
+      </div>
     </div>
   );
 };
-
-const DetailItem = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
-  <div className="flex items-center gap-2 min-w-0">
-    <Icon className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-    <div className="min-w-0">
-      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className="text-xs font-medium text-foreground truncate">{value}</p>
-    </div>
-  </div>
-);
 
 export default TurretCard;

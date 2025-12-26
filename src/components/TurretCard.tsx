@@ -33,13 +33,13 @@ const ChannelPanel = ({ channel, index }: { channel: Channel; index: number }) =
   const isOnline = channel.status === "online";
 
   return (
-    <div className="bg-secondary/30 rounded-lg p-4 border border-border/30">
+    <div className="bg-secondary/30 rounded-lg p-3 sm:p-4 border border-border/30 min-w-0">
       {/* Channel Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-start gap-2">
-          <Waves className="w-4 h-4 text-primary mt-0.5" />
-          <div>
-            <span className="font-display text-sm font-bold tracking-wider text-foreground block">
+      <div className="flex items-start justify-between gap-2 mb-4">
+        <div className="flex items-start gap-2 min-w-0 flex-1">
+          <Waves className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+          <div className="min-w-0">
+            <span className="font-display text-sm font-bold tracking-wider text-foreground block truncate">
               {channel.name}
             </span>
             <span className={`text-[10px] uppercase tracking-wider font-semibold ${
@@ -49,13 +49,14 @@ const ChannelPanel = ({ channel, index }: { channel: Channel; index: number }) =
             </span>
           </div>
         </div>
-        <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+        <div className={`flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider shrink-0 ${
           channel.ringState === "ringing" 
             ? "bg-warning/20 text-warning" 
             : "bg-secondary/50 text-muted-foreground"
         }`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${channel.ringState === "ringing" ? "bg-warning animate-pulse" : "bg-muted-foreground"}`} />
-          {channel.ringState === "ringing" ? "Ringing" : "Idle"}
+          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${channel.ringState === "ringing" ? "bg-warning animate-pulse" : "bg-muted-foreground"}`} />
+          <span className="hidden xs:inline">{channel.ringState === "ringing" ? "Ringing" : "Idle"}</span>
+          <span className="xs:hidden">{channel.ringState === "ringing" ? "Ring" : "Idle"}</span>
         </div>
       </div>
 

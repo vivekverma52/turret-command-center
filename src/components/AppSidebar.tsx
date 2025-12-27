@@ -1,6 +1,6 @@
-import { LucideIcon } from "lucide-react";
+import { LucideIcon, LogOut } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -10,6 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarTrigger,
+  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
 
@@ -28,12 +29,17 @@ const AppSidebar = ({ items }: AppSidebarProps) => {
   const collapsed = sidebar?.state === "collapsed";
   const isMobile = sidebar?.isMobile;
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
 
   const isActive = (path: string) => currentPath === path;
   
   // On mobile, always show text (sidebar opens as sheet)
   const showText = isMobile || !collapsed;
+
+  const handleLogout = () => {
+    navigate("/");
+  };
 
   return (
     <Sidebar
@@ -80,6 +86,26 @@ const AppSidebar = ({ items }: AppSidebarProps) => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      
+      <SidebarFooter className="border-t border-border/50 p-2">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={handleLogout}
+              className="mx-2 rounded-lg transition-all duration-200 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            >
+              <div className="flex items-center gap-3 px-3 py-2.5">
+                <LogOut className="w-5 h-5 shrink-0" />
+                {showText && (
+                  <span className="font-display text-sm tracking-wider">
+                    Logout
+                  </span>
+                )}
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 };

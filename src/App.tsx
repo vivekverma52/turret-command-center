@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
 import Index from "./pages/Index";
 import Analytics from "./pages/Analytics";
+import Login from "./pages/Login";
 import AuditReport from "./pages/reports/AuditReport";
 import IPPhoneAuditReport from "./pages/reports/IPPhoneAuditReport";
 import IPPhoneDisconnectReport from "./pages/reports/IPPhoneDisconnectReport";
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/reports/turret-disconnect" element={<TurretDisconnectReport />} />
             <Route path="/alerts" element={<Alerts />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/login" element={<Login />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppLayout>

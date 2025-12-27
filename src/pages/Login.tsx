@@ -26,7 +26,7 @@ const Login = () => {
           title: "Login Successful",
           description: "Welcome back!",
         });
-        navigate("/");
+        navigate("/dashboard");
       } else {
         toast({
           title: "Login Failed",
@@ -96,6 +96,14 @@ const Login = () => {
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Signing in..." : "Sign In"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full mt-2"
+              onClick={() => navigate("/dashboard")}
+            >
+              Skip for now
             </Button>
           </form>
           <div className="mt-6 text-center text-sm">

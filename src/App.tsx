@@ -34,20 +34,27 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/reports/call-audit" element={<AuditReport />} />
-            <Route path="/reports/ip-phone-audit" element={<IPPhoneAuditReport />} />
-            <Route path="/reports/ip-phone-disconnect" element={<IPPhoneDisconnectReport />} />
-            <Route path="/reports/turret-disconnect" element={<TurretDisconnectReport />} />
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AppLayout>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route
+            path="/*"
+            element={
+              <AppLayout>
+                <Routes>
+                  <Route path="/dashboard" element={<Index />} />
+                  <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/reports/call-audit" element={<AuditReport />} />
+                  <Route path="/reports/ip-phone-audit" element={<IPPhoneAuditReport />} />
+                  <Route path="/reports/ip-phone-disconnect" element={<IPPhoneDisconnectReport />} />
+                  <Route path="/reports/turret-disconnect" element={<TurretDisconnectReport />} />
+                  <Route path="/alerts" element={<Alerts />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AppLayout>
+            }
+          />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

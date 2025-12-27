@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 const navItems: NavItem[] = [
-  { title: "Turrets", url: "/", icon: Crosshair },
+  { title: "Turrets", url: "/dashboard", icon: Crosshair },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Call Audit", url: "/reports/call-audit", icon: FileAudio },
   { title: "IP Phone Audit", url: "/reports/ip-phone-audit", icon: Phone },

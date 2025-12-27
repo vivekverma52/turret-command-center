@@ -3,6 +3,7 @@ import { Radio, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import ReportSkeleton from "@/components/skeletons/ReportSkeleton";
 import {
   Table,
   TableBody,
@@ -129,14 +130,7 @@ const TurretDisconnectReport = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <span className="text-muted-foreground text-sm">Loading report data...</span>
-        </div>
-      </div>
-    );
+    return <ReportSkeleton columns={5} filterCount={5} />;
   }
 
   return (

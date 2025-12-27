@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import ReportSkeleton from "@/components/skeletons/ReportSkeleton";
 import {
   Table,
   TableBody,
@@ -154,14 +155,7 @@ const IPPhoneAuditReport = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <span className="text-muted-foreground text-sm">Loading IP phone audit data...</span>
-        </div>
-      </div>
-    );
+    return <ReportSkeleton columns={6} filterCount={5} />;
   }
 
   return (

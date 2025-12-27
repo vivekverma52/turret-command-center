@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import TurretCard from "@/components/TurretCard";
 import StatusPanel from "@/components/StatusPanel";
+import DashboardSkeleton from "@/components/skeletons/DashboardSkeleton";
 import { Radio, Zap, Shield, Target } from "lucide-react";
 
 const turrets = [
@@ -121,6 +122,8 @@ const turrets = [
 ];
 
 const Index = () => {
+  const [loading, setLoading] = useState(true);
+  
   // Dynamic stats that update periodically to show NumberFlow animation
   const [stats, setStats] = useState({
     totalTurrets: 3,
@@ -128,6 +131,12 @@ const Index = () => {
     activeShields: 4,
     targetsLocked: 1,
   });
+
+  useEffect(() => {
+    // Simulate initial data loading
+    const timer = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -143,6 +152,10 @@ const Index = () => {
   }, []);
 
   const totalChannels = turrets.length * 2;
+
+  if (loading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="h-full bg-background px-4 md:px-6 py-6 md:py-8">

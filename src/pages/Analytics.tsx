@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Upload, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TurretTable, { type Turret } from "@/components/analytics/TurretTable";
 import CreateTurretModal from "@/components/analytics/CreateTurretModal";
 import UpdateTurretModal from "@/components/analytics/UpdateTurretModal";
 import UploadCSVModal from "@/components/analytics/UploadCSVModal";
+import AnalyticsSkeleton from "@/components/skeletons/AnalyticsSkeleton";
 import { useToast } from "@/hooks/use-toast";
 
 // Mock initial data
@@ -60,12 +61,26 @@ const emptyTurret: Partial<Turret> = {
 };
 
 const Analytics = () => {
-  const [turrets, setTurrets] = useState<Turret[]>(initialTurrets);
+  const [loading, setLoading] = useState(true);
+  const [turrets, setTurrets] = useState<Turret[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingTurret, setEditingTurret] = useState<Turret | null>(null);
   const [newTurret, setNewTurret] = useState<Partial<Turret>>(emptyTurret);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Simulate data loading
+    const timer = setTimeout(() => {
+      setTurrets(initialTurrets);
+      setLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return <AnalyticsSkeleton />;
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;

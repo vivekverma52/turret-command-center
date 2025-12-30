@@ -1,12 +1,6 @@
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface TablePaginationProps {
   currentPage: number;
@@ -23,7 +17,7 @@ const TablePagination = ({
   pageSize,
   onPageChange,
   onPageSizeChange,
-  pageSizeOptions = [10, 20, 50, 100],
+  pageSizeOptions = [10, 20, 50, 100, 500, 1000],
 }: TablePaginationProps) => {
   const totalPages = Math.ceil(totalItems / pageSize);
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
@@ -36,10 +30,7 @@ const TablePagination = ({
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-3 border-t border-border/30 bg-card/30">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <span>Rows per page:</span>
-        <Select
-          value={pageSize.toString()}
-          onValueChange={(value) => onPageSizeChange(Number(value))}
-        >
+        <Select value={pageSize.toString()} onValueChange={(value) => onPageSizeChange(Number(value))}>
           <SelectTrigger className="w-[70px] h-8 bg-secondary/50 border-border/50">
             <SelectValue />
           </SelectTrigger>

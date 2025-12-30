@@ -38,7 +38,8 @@ const IPPhoneDisconnectReport = () => {
     callId: "",
     reason: "",
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   const {
     paginatedData,
@@ -66,6 +67,7 @@ const IPPhoneDisconnectReport = () => {
       setFilteredData([]);
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
   };
 
@@ -150,7 +152,7 @@ const IPPhoneDisconnectReport = () => {
     }
   };
 
-  if (loading) {
+  if (initialLoad && loading) {
     return <ReportSkeleton columns={5} filterCount={5} />;
   }
 

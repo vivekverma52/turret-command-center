@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import ReportSkeleton from "@/components/skeletons/ReportSkeleton";
+import TablePagination from "@/components/TablePagination";
+import { usePagination } from "@/hooks/usePagination";
 import { apiFetch, ENDPOINTS } from "@/lib/api";
 import { toast } from "sonner";
 import {
@@ -38,6 +40,15 @@ const AuditReport = () => {
     state: "",
   });
   const [loading, setLoading] = useState(false);
+
+  const {
+    paginatedData,
+    currentPage,
+    pageSize,
+    totalItems,
+    handlePageChange,
+    handlePageSizeChange,
+  } = usePagination({ data: filteredData });
 
   useEffect(() => {
     fetchData();
@@ -244,8 +255,8 @@ const AuditReport = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredData.length > 0 ? (
-              filteredData.map((item, index) => (
+            {paginatedData.length > 0 ? (
+              paginatedData.map((item, index) => (
                 <TableRow key={item.callId || index} className="border-border/30 hover:bg-secondary/30">
                   <TableCell className="text-sm text-muted-foreground">{formatDate(item.createdOn)}</TableCell>
                   <TableCell className="font-semibold text-foreground">{item.turretName || "N/A"}</TableCell>
@@ -277,6 +288,13 @@ const AuditReport = () => {
             )}
           </TableBody>
         </Table>
+        <TablePagination
+          currentPage={currentPage}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
       </div>
     </div>
   );

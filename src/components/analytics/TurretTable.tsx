@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { type Turret } from "@/hooks/useTurrets";
+import TablePagination from "@/components/TablePagination";
+import { usePagination } from "@/hooks/usePagination";
 
 interface TurretTableProps {
   turrets: Turret[];
@@ -19,6 +21,15 @@ interface TurretTableProps {
 }
 
 const TurretTable = ({ turrets, loading, onEdit, onDelete }: TurretTableProps) => {
+  const {
+    paginatedData,
+    currentPage,
+    pageSize,
+    totalItems,
+    handlePageChange,
+    handlePageSizeChange,
+  } = usePagination({ data: turrets });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -53,7 +64,7 @@ const TurretTable = ({ turrets, loading, onEdit, onDelete }: TurretTableProps) =
           </TableRow>
         </TableHeader>
         <TableBody>
-          {turrets.map((turret) => (
+          {paginatedData.map((turret) => (
             <TableRow key={turret.id} className="border-border/30 hover:bg-secondary/30">
               <TableCell className="font-mono text-sm text-foreground">{turret.turretId || turret.id}</TableCell>
               <TableCell className="font-semibold text-foreground">{turret.turretName}</TableCell>
@@ -95,6 +106,13 @@ const TurretTable = ({ turrets, loading, onEdit, onDelete }: TurretTableProps) =
           ))}
         </TableBody>
       </Table>
+      <TablePagination
+        currentPage={currentPage}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
     </div>
   );
 };

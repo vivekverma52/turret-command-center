@@ -9,18 +9,8 @@ const Index = () => {
 
   // Calculate stats from real data
   const uniqueTurrets = [...new Set(channels.map(c => c.turretName))].length;
-  const activeChannels = channels.filter(c => 
-    c.state?.toLowerCase().includes("active") || 
-    c.state?.toLowerCase().includes("connected")
-  ).length;
-  const ringingChannels = channels.filter(c => 
-    c.state?.toLowerCase().includes("ringing") || 
-    c.state?.toLowerCase().includes("alerting")
-  ).length;
-  const busyChannels = channels.filter(c => 
-    c.state?.toLowerCase().includes("busy") || 
-    c.state?.toLowerCase().includes("hold")
-  ).length;
+  const activeChannels = channels.filter(c => c.isActive === true).length;
+  const inactiveChannels = channels.filter(c => c.isActive === false).length;
 
   if (isLoading) {
     return <DashboardSkeleton />;
@@ -46,32 +36,24 @@ const Index = () => {
           items={[
             {
               label: "Total Turrets",
-              value: uniqueTurrets,
+              value: channels.length,
               icon: Radio,
               iconColor: "text-primary",
               valueColor: "text-primary text-glow",
             },
             {
-              label: "Active Channels",
+              label: "Active",
               value: activeChannels,
-              subValue: `/${channels.length}`,
               icon: Zap,
               iconColor: "text-success",
               valueColor: "text-success",
             },
             {
-              label: "Ringing",
-              value: ringingChannels,
+              label: "Inactive",
+              value: inactiveChannels,
               icon: Phone,
-              iconColor: "text-warning",
-              valueColor: "text-warning",
-            },
-            {
-              label: "Busy/Hold",
-              value: busyChannels,
-              icon: Phone,
-              iconColor: "text-primary",
-              valueColor: "text-primary text-glow",
+              iconColor: "text-destructive",
+              valueColor: "text-destructive",
             },
           ]}
         />

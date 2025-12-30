@@ -48,10 +48,6 @@ const CreateTurretModal = ({ isOpen, onClose, turretData, handleChange, handleSu
                 className="bg-secondary/50 border-border/50 focus:border-primary"
               />
             </div>
-          </div>
-
-          {/* Row 2: IP & Port */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-muted-foreground text-sm">IP Address</Label>
               <Input
@@ -62,6 +58,10 @@ const CreateTurretModal = ({ isOpen, onClose, turretData, handleChange, handleSu
                 className="bg-secondary/50 border-border/50 focus:border-primary"
               />
             </div>
+          </div>
+
+          {/* Row 2: IP & Port */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-muted-foreground text-sm">Port</Label>
               <Input
@@ -73,10 +73,7 @@ const CreateTurretModal = ({ isOpen, onClose, turretData, handleChange, handleSu
                 className="bg-secondary/50 border-border/50 focus:border-primary"
               />
             </div>
-          </div>
 
-          {/* Row 3: Notification IP & Subscribe Port */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-muted-foreground text-sm">Notification IP</Label>
               <Input
@@ -87,6 +84,10 @@ const CreateTurretModal = ({ isOpen, onClose, turretData, handleChange, handleSu
                 className="bg-secondary/50 border-border/50 focus:border-primary"
               />
             </div>
+          </div>
+
+          {/* Row 3: Notification IP & Subscribe Port */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-muted-foreground text-sm">Subscribe Port</Label>
               <Input
@@ -98,10 +99,6 @@ const CreateTurretModal = ({ isOpen, onClose, turretData, handleChange, handleSu
                 className="bg-secondary/50 border-border/50 focus:border-primary"
               />
             </div>
-          </div>
-
-          {/* Row 4: Profile Name & Channels */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-muted-foreground text-sm">Profile Name</Label>
               <Input
@@ -112,6 +109,10 @@ const CreateTurretModal = ({ isOpen, onClose, turretData, handleChange, handleSu
                 className="bg-secondary/50 border-border/50 focus:border-primary"
               />
             </div>
+          </div>
+
+          {/* Row 4: Profile Name & Channels */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-muted-foreground text-sm">Number of Channels</Label>
               <Input

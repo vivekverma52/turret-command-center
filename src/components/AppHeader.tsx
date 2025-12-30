@@ -9,7 +9,7 @@ interface AppHeaderProps {
 
 const AppHeader = ({ title, icon: Icon }: AppHeaderProps) => {
   return (
-    <header className="h-14 border-b border-border/50 bg-card/50 backdrop-blur-sm flex items-center px-4">
+    <header className="h-14 border-b border-border/50 bg-card/80 backdrop-blur-sm flex items-center px-4 sticky top-0 z-50">
       {/* Mobile sidebar trigger */}
       <div className="md:hidden">
         <SidebarTrigger className="text-primary hover:bg-primary/10" />

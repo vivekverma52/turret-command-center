@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ReportSkeleton from "@/components/skeletons/ReportSkeleton";
+import { apiFetch, ENDPOINTS } from "@/lib/api";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -21,31 +23,6 @@ interface TurretDisconnectData {
   partyNumber: string;
 }
 
-// Mock data
-const mockData: TurretDisconnectData[] = [
-  {
-    callId: "CALL-001",
-    createdOn: "2025-01-15 10:30:00",
-    turretName: "Turret Alpha",
-    lineNo: "Line 1",
-    partyNumber: "+1234567890",
-  },
-  {
-    callId: "CALL-002",
-    createdOn: "2025-01-15 11:45:00",
-    turretName: "Turret Bravo",
-    lineNo: "Line 2",
-    partyNumber: "+0987654321",
-  },
-  {
-    callId: "CALL-003",
-    createdOn: "2025-01-15 14:20:00",
-    turretName: "Turret Alpha",
-    lineNo: "Line 3",
-    partyNumber: "+1122334455",
-  },
-];
-
 const TurretDisconnectReport = () => {
   const [allData, setAllData] = useState<TurretDisconnectData[]>([]);
   const [filteredData, setFilteredData] = useState<TurretDisconnectData[]>([]);
@@ -59,13 +36,24 @@ const TurretDisconnectReport = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setAllData(mockData);
-      setFilteredData(mockData);
-      setLoading(false);
-    }, 500);
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const data = await apiFetch<TurretDisconnectData[]>(ENDPOINTS.TURRET_DISCONNECT);
+      setAllData(data);
+      setFilteredData(data);
+    } catch (error) {
+      console.error("Failed to fetch turret disconnect data:", error);
+      toast.error("Failed to fetch turret disconnect data");
+      setAllData([]);
+      setFilteredData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     applyFilters();
@@ -76,33 +64,33 @@ const TurretDisconnectReport = () => {
 
     if (filters.startDate) {
       result = result.filter((item) => {
-        const itemDate = item.createdOn.split(" ")[0];
+        const itemDate = item.createdOn?.split(" ")[0];
         return itemDate >= filters.startDate;
       });
     }
 
     if (filters.endDate) {
       result = result.filter((item) => {
-        const itemDate = item.createdOn.split(" ")[0];
+        const itemDate = item.createdOn?.split(" ")[0];
         return itemDate <= filters.endDate;
       });
     }
 
     if (filters.turretName) {
       result = result.filter((item) =>
-        item.turretName.toLowerCase().includes(filters.turretName.toLowerCase())
+        item.turretName?.toLowerCase().includes(filters.turretName.toLowerCase())
       );
     }
 
     if (filters.lineNo) {
       result = result.filter((item) =>
-        item.lineNo.toLowerCase().includes(filters.lineNo.toLowerCase())
+        item.lineNo?.toLowerCase().includes(filters.lineNo.toLowerCase())
       );
     }
 
     if (filters.partyNumber) {
       result = result.filter((item) =>
-        item.partyNumber.toLowerCase().includes(filters.partyNumber.toLowerCase())
+        item.partyNumber?.toLowerCase().includes(filters.partyNumber.toLowerCase())
       );
     }
 
@@ -125,6 +113,7 @@ const TurretDisconnectReport = () => {
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return "N/A";
     const date = new Date(dateString);
     return date.toLocaleString();
   };
@@ -220,13 +209,13 @@ const TurretDisconnectReport = () => {
           </TableHeader>
           <TableBody>
             {filteredData.length > 0 ? (
-              filteredData.map((item) => (
-                <TableRow key={item.callId} className="border-border/30 hover:bg-secondary/30">
+              filteredData.map((item, index) => (
+                <TableRow key={item.callId || index} className="border-border/30 hover:bg-secondary/30">
                   <TableCell className="text-sm text-muted-foreground">{formatDate(item.createdOn)}</TableCell>
-                  <TableCell className="font-semibold text-foreground">{item.turretName}</TableCell>
-                  <TableCell className="text-muted-foreground">{item.lineNo}</TableCell>
-                  <TableCell className="font-mono text-sm text-muted-foreground">{item.partyNumber}</TableCell>
-                  <TableCell className="font-mono text-sm text-muted-foreground">{item.callId}</TableCell>
+                  <TableCell className="font-semibold text-foreground">{item.turretName || "N/A"}</TableCell>
+                  <TableCell className="text-muted-foreground">{item.lineNo || "N/A"}</TableCell>
+                  <TableCell className="font-mono text-sm text-muted-foreground">{item.partyNumber || "N/A"}</TableCell>
+                  <TableCell className="font-mono text-sm text-muted-foreground">{item.callId || "N/A"}</TableCell>
                 </TableRow>
               ))
             ) : (

@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import ReportSkeleton from "@/components/skeletons/ReportSkeleton";
+import { apiFetch, ENDPOINTS } from "@/lib/api";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -24,37 +26,6 @@ interface IPPhoneAuditData {
   createdOn: string;
 }
 
-// Mock data
-const mockData: IPPhoneAuditData[] = [
-  {
-    id: "1",
-    callDisconnectDateTime: "2025-01-15T10:30:00",
-    deviceIdentifier: "DEVICE-001",
-    callId: "CALL-001",
-    partyNumber: "+1234567890",
-    state: "ConnectionCleared",
-    createdOn: "2025-01-15T10:30:00",
-  },
-  {
-    id: "2",
-    callDisconnectDateTime: "2025-01-15T11:45:00",
-    deviceIdentifier: "DEVICE-002",
-    callId: "CALL-002",
-    partyNumber: "+0987654321",
-    state: "Connected",
-    createdOn: "2025-01-15T11:45:00",
-  },
-  {
-    id: "3",
-    callDisconnectDateTime: "2025-01-15T14:20:00",
-    deviceIdentifier: "DEVICE-003",
-    callId: "CALL-003",
-    partyNumber: "+1122334455",
-    state: "Disconnected",
-    createdOn: "2025-01-15T14:20:00",
-  },
-];
-
 const IPPhoneAuditReport = () => {
   const [allData, setAllData] = useState<IPPhoneAuditData[]>([]);
   const [filteredData, setFilteredData] = useState<IPPhoneAuditData[]>([]);
@@ -68,13 +39,24 @@ const IPPhoneAuditReport = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setAllData(mockData);
-      setFilteredData(mockData);
-      setLoading(false);
-    }, 500);
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const data = await apiFetch<IPPhoneAuditData[]>(ENDPOINTS.IP_PHONE_AUDIT);
+      setAllData(data);
+      setFilteredData(data);
+    } catch (error) {
+      console.error("Failed to fetch IP phone audit data:", error);
+      toast.error("Failed to fetch IP phone audit data");
+      setAllData([]);
+      setFilteredData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     applyFilters();
@@ -246,8 +228,8 @@ const IPPhoneAuditReport = () => {
           </TableHeader>
           <TableBody>
             {filteredData.length > 0 ? (
-              filteredData.map((item) => (
-                <TableRow key={item.id} className="border-border/30 hover:bg-secondary/30">
+              filteredData.map((item, index) => (
+                <TableRow key={item.id || index} className="border-border/30 hover:bg-secondary/30">
                   <TableCell className="text-sm text-muted-foreground">{formatDateTime(item.callDisconnectDateTime)}</TableCell>
                   <TableCell className="font-mono text-sm text-foreground">{item.deviceIdentifier || "N/A"}</TableCell>
                   <TableCell className="font-mono text-sm text-muted-foreground">{item.callId || "N/A"}</TableCell>

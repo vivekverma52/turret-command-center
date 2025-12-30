@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import ReportSkeleton from "@/components/skeletons/ReportSkeleton";
+import { apiFetch, ENDPOINTS } from "@/lib/api";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -23,34 +25,6 @@ interface IPPhoneDisconnectData {
   reson: string; // Note: typo from original API
 }
 
-// Mock data
-const mockData: IPPhoneDisconnectData[] = [
-  {
-    id: "1",
-    createdOn: "2025-01-15 10:30:00",
-    deviceIdentifier: "DEVICE-001",
-    callId: "CALL-001",
-    partyNumber: "+1234567890",
-    reson: "Normal call clearing",
-  },
-  {
-    id: "2",
-    createdOn: "2025-01-15 11:45:00",
-    deviceIdentifier: "DEVICE-002",
-    callId: "CALL-002",
-    partyNumber: "+0987654321",
-    reson: "Service not found",
-  },
-  {
-    id: "3",
-    createdOn: "2025-01-15 14:20:00",
-    deviceIdentifier: "DEVICE-003",
-    callId: "CALL-003",
-    partyNumber: "+1122334455",
-    reson: "User busy",
-  },
-];
-
 const IPPhoneDisconnectReport = () => {
   const [allData, setAllData] = useState<IPPhoneDisconnectData[]>([]);
   const [filteredData, setFilteredData] = useState<IPPhoneDisconnectData[]>([]);
@@ -64,13 +38,24 @@ const IPPhoneDisconnectReport = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setAllData(mockData);
-      setFilteredData(mockData);
-      setLoading(false);
-    }, 500);
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const data = await apiFetch<IPPhoneDisconnectData[]>(ENDPOINTS.IP_PHONE_DISCONNECT);
+      setAllData(data);
+      setFilteredData(data);
+    } catch (error) {
+      console.error("Failed to fetch IP phone disconnect data:", error);
+      toast.error("Failed to fetch IP phone disconnect data");
+      setAllData([]);
+      setFilteredData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     applyFilters();
@@ -81,14 +66,14 @@ const IPPhoneDisconnectReport = () => {
 
     if (filters.startDate) {
       result = result.filter((item) => {
-        const itemDate = item.createdOn.split(" ")[0];
+        const itemDate = item.createdOn?.split(" ")[0];
         return itemDate >= filters.startDate;
       });
     }
 
     if (filters.endDate) {
       result = result.filter((item) => {
-        const itemDate = item.createdOn.split(" ")[0];
+        const itemDate = item.createdOn?.split(" ")[0];
         return itemDate <= filters.endDate;
       });
     }
@@ -241,8 +226,8 @@ const IPPhoneDisconnectReport = () => {
           </TableHeader>
           <TableBody>
             {filteredData.length > 0 ? (
-              filteredData.map((item) => (
-                <TableRow key={item.id} className="border-border/30 hover:bg-secondary/30">
+              filteredData.map((item, index) => (
+                <TableRow key={item.id || index} className="border-border/30 hover:bg-secondary/30">
                   <TableCell className="text-sm text-muted-foreground">{formatDateTime(item.createdOn)}</TableCell>
                   <TableCell className="font-mono text-sm text-foreground">{item.deviceIdentifier || "N/A"}</TableCell>
                   <TableCell className="font-mono text-sm text-muted-foreground">{item.callId || "N/A"}</TableCell>

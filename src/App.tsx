@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import AppLayout from "./components/AppLayout";
 import Index from "./pages/Index";
 import Analytics from "./pages/Analytics";
+import DeviceManagement from "./pages/DeviceManagement";
 import Login from "./pages/Login";
 import AuditReport from "./pages/reports/AuditReport";
 import IPPhoneAuditReport from "./pages/reports/IPPhoneAuditReport";
@@ -45,6 +46,7 @@ const App = () => (
                   <Routes>
                     <Route path="/dashboard" element={<Index />} />
                     <Route path="/analytics" element={<Analytics />} />
+                    <Route path="/devices" element={<DeviceManagement />} />
                     <Route path="/reports/call-audit" element={<AuditReport />} />
                     <Route path="/reports/ip-phone-audit" element={<IPPhoneAuditReport />} />
                     <Route path="/reports/ip-phone-disconnect" element={<IPPhoneDisconnectReport />} />

@@ -1,52 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Plus, Upload, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import TurretTable, { type Turret } from "@/components/analytics/TurretTable";
+import TurretTable from "@/components/analytics/TurretTable";
 import CreateTurretModal from "@/components/analytics/CreateTurretModal";
 import UpdateTurretModal from "@/components/analytics/UpdateTurretModal";
 import UploadCSVModal from "@/components/analytics/UploadCSVModal";
 import AnalyticsSkeleton from "@/components/skeletons/AnalyticsSkeleton";
-import { useToast } from "@/hooks/use-toast";
-
-// Mock initial data
-const initialTurrets: Turret[] = [
-  {
-    id: "1",
-    turretId: "T001",
-    turretName: "Turret Alpha",
-    ip: "192.168.1.101",
-    port: "8080",
-    notificationIp: "192.168.1.200",
-    subscribePort: "9090",
-    profileName: "default_profile",
-    noOfChannel: "2",
-    isActive: true,
-  },
-  {
-    id: "2",
-    turretId: "T002",
-    turretName: "Turret Bravo",
-    ip: "192.168.1.102",
-    port: "8080",
-    notificationIp: "192.168.1.200",
-    subscribePort: "9091",
-    profileName: "tactical_profile",
-    noOfChannel: "3",
-    isActive: true,
-  },
-  {
-    id: "3",
-    turretId: "T003",
-    turretName: "Turret Charlie",
-    ip: "192.168.1.103",
-    port: "8081",
-    notificationIp: "192.168.1.201",
-    subscribePort: "9092",
-    profileName: "default_profile",
-    noOfChannel: "2",
-    isActive: false,
-  },
-];
+import { useTurrets, type Turret } from "@/hooks/useTurrets";
 
 const emptyTurret: Partial<Turret> = {
   turretId: "",
@@ -61,24 +21,13 @@ const emptyTurret: Partial<Turret> = {
 };
 
 const Analytics = () => {
-  const [loading, setLoading] = useState(true);
-  const [turrets, setTurrets] = useState<Turret[]>([]);
+  const { turrets, isLoading, addTurret, updateTurret, deleteTurret, refetch } = useTurrets();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingTurret, setEditingTurret] = useState<Turret | null>(null);
   const [newTurret, setNewTurret] = useState<Partial<Turret>>(emptyTurret);
-  const { toast } = useToast();
 
-  useEffect(() => {
-    // Simulate data loading
-    const timer = setTimeout(() => {
-      setTurrets(initialTurrets);
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return <AnalyticsSkeleton />;
   }
 
@@ -94,52 +43,19 @@ const Analytics = () => {
   };
 
   const handleCreate = () => {
-    const turret: Turret = {
-      id: Date.now().toString(),
-      turretId: newTurret.turretId || `T${Date.now()}`,
-      turretName: newTurret.turretName || "",
-      ip: newTurret.ip || "",
-      port: newTurret.port || "",
-      notificationIp: newTurret.notificationIp || "",
-      subscribePort: newTurret.subscribePort || "",
-      profileName: newTurret.profileName || "default_profile",
-      noOfChannel: newTurret.noOfChannel || "",
-      isActive: newTurret.isActive || false,
-    };
-
-    setTurrets([...turrets, turret]);
+    addTurret(newTurret);
     setNewTurret(emptyTurret);
     setIsCreateModalOpen(false);
-    
-    toast({
-      title: "Turret created",
-      description: `${turret.turretName} has been created successfully.`,
-    });
   };
 
   const handleUpdate = () => {
     if (!editingTurret) return;
-
-    setTurrets(turrets.map((t) => 
-      t.id === editingTurret.id ? editingTurret : t
-    ));
+    updateTurret({ id: editingTurret.id, updatedFields: editingTurret });
     setEditingTurret(null);
-    
-    toast({
-      title: "Turret updated",
-      description: `${editingTurret.turretName} has been updated successfully.`,
-    });
   };
 
   const handleDelete = (id: string) => {
-    const turret = turrets.find((t) => t.id === id);
-    setTurrets(turrets.filter((t) => t.id !== id));
-    
-    toast({
-      title: "Turret deleted",
-      description: turret ? `${turret.turretName} has been deleted.` : "Turret deleted.",
-      variant: "destructive",
-    });
+    deleteTurret(id);
   };
 
   const handleEdit = (turret: Turret) => {
@@ -147,10 +63,7 @@ const Analytics = () => {
   };
 
   const handleUploadSuccess = () => {
-    toast({
-      title: "CSV uploaded",
-      description: "Turret data has been imported successfully.",
-    });
+    refetch();
   };
 
   return (

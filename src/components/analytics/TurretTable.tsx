@@ -9,20 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-
-export interface Turret {
-  id: string;
-  turretId?: string;
-  turretName: string;
-  ip: string;
-  port: string;
-  notificationIp: string;
-  subscribePort: string;
-  profileName: string;
-  noOfChannel: string;
-  isActive: boolean;
-  isDeleted?: boolean;
-}
+import { type Turret } from "@/hooks/useTurrets";
 
 interface TurretTableProps {
   turrets: Turret[];

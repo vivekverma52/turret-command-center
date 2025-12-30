@@ -51,6 +51,8 @@ const IPPhoneAuditReport = () => {
 
   useEffect(() => {
     fetchData();
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchData = async () => {

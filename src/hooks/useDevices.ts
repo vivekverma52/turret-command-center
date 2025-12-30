@@ -24,6 +24,7 @@ export const useDevices = () => {
   } = useQuery<Device[]>({
     queryKey: ["devices"],
     queryFn: () => apiFetch<Device[]>(ENDPOINTS.DEVICES),
+    refetchInterval: 5000,
   });
 
   // Add device mutation

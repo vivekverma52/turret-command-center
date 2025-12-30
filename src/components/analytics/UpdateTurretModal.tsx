@@ -1,9 +1,4 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,13 +13,7 @@ interface UpdateTurretModalProps {
   handleSubmit: () => void;
 }
 
-const UpdateTurretModal = ({
-  isOpen,
-  onClose,
-  turretData,
-  handleChange,
-  handleSubmit,
-}: UpdateTurretModalProps) => {
+const UpdateTurretModal = ({ isOpen, onClose, turretData, handleChange, handleSubmit }: UpdateTurretModalProps) => {
   const handleSwitchChange = (checked: boolean) => {
     const event = {
       target: {
@@ -74,7 +63,7 @@ const UpdateTurretModal = ({
                 name="turretName"
                 value={turretData.turretName || ""}
                 onChange={handleChange}
-                placeholder="Enter Turret Name"
+                readOnly
                 className="bg-secondary/50 border-border/50 focus:border-primary"
               />
             </div>
@@ -151,7 +140,9 @@ const UpdateTurretModal = ({
                 onCheckedChange={handleSwitchChange}
                 className="data-[state=checked]:bg-primary"
               />
-              <span className={`text-sm font-semibold ${turretData.isActive ? "text-success" : "text-muted-foreground"}`}>
+              <span
+                className={`text-sm font-semibold ${turretData.isActive ? "text-success" : "text-muted-foreground"}`}
+              >
                 {turretData.isActive ? "Active" : "Inactive"}
               </span>
             </div>
@@ -167,10 +158,7 @@ const UpdateTurretModal = ({
           >
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan"
-          >
+          <Button onClick={handleSubmit} className="bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan">
             Update
           </Button>
         </div>

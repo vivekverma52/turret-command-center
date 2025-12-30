@@ -14,7 +14,7 @@ const AppHeader = ({ title, icon: Icon }: AppHeaderProps) => {
       <div className="md:hidden">
         <SidebarTrigger className="text-primary hover:bg-primary/10" />
       </div>
-      
+
       {/* Centered title */}
       <div className="flex-1 flex items-center justify-center">
         <div className="flex items-center gap-3">
@@ -24,11 +24,11 @@ const AppHeader = ({ title, icon: Icon }: AppHeaderProps) => {
             </div>
           )}
           <h1 className="font-display text-lg font-bold tracking-wider text-foreground uppercase">
-            {title}
+            /* {title} */ NO-REC NO-CALL
           </h1>
         </div>
       </div>
-      
+
       {/* Theme toggle */}
       <div className="flex items-center">
         <ThemeToggle />

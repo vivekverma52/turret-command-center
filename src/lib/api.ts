@@ -17,6 +17,12 @@ export const ENDPOINTS = {
   
   // Dashboard Channels
   CHANNELS: "/channel/getAllData",
+  
+  // Device Management
+  DEVICES: "/deviceModel/getAllData",
+  CREATE_DEVICE: "/deviceModel/create",
+  UPDATE_DEVICE: "/deviceModel/update",
+  DELETE_DEVICE: "/deviceModel/delete",
 } as const;
 
 // Helper function to build full URL

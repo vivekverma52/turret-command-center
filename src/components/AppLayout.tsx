@@ -11,12 +11,14 @@ import {
   FileAudio,
   Phone,
   PhoneOff,
-  Radio
+  Radio,
+  Smartphone
 } from "lucide-react";
 
 const navItems: NavItem[] = [
   { title: "Turrets", url: "/dashboard", icon: Crosshair },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "Devices", url: "/devices", icon: Smartphone },
   { title: "Call Audit", url: "/reports/call-audit", icon: FileAudio },
   { title: "IP Phone Audit", url: "/reports/ip-phone-audit", icon: Phone },
   { title: "IP Disconnect", url: "/reports/ip-phone-disconnect", icon: PhoneOff },

@@ -21,13 +21,19 @@ const emptyTurret: Partial<Turret> = {
 };
 
 const Analytics = () => {
-  const { turrets, isLoading, addTurret, updateTurret, deleteTurret, refetch } = useTurrets();
+  const { turrets, isLoading, error, addTurret, updateTurret, deleteTurret, refetch } = useTurrets();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingTurret, setEditingTurret] = useState<Turret | null>(null);
   const [newTurret, setNewTurret] = useState<Partial<Turret>>(emptyTurret);
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
 
-  if (isLoading) {
+  // Track when initial load completes (success or error)
+  if (!isLoading && !hasInitiallyLoaded) {
+    setHasInitiallyLoaded(true);
+  }
+
+  if (isLoading && !hasInitiallyLoaded) {
     return <AnalyticsSkeleton />;
   }
 

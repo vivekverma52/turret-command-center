@@ -14,6 +14,9 @@ export const ENDPOINTS = {
   CREATE_TURRET: "/turret/create",
   UPDATE_TURRET: "/turret/update",
   DELETE_TURRET: "/turret/delete",
+  
+  // Dashboard Channels
+  CHANNELS: "/channel/getAllData",
 } as const;
 
 // Helper function to build full URL

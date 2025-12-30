@@ -1,160 +1,41 @@
-import { useState, useEffect } from "react";
-import TurretCard from "@/components/TurretCard";
 import StatusPanel from "@/components/StatusPanel";
+import ChannelCard from "@/components/ChannelCard";
 import DashboardSkeleton from "@/components/skeletons/DashboardSkeleton";
-import { Radio, Zap, Shield, Target } from "lucide-react";
-
-const turrets = [
-  {
-    id: "T001",
-    name: "Turret Alpha",
-    ip: "192.168.1.101",
-    lastActivity: new Date().toISOString(),
-    channels: [
-      {
-        id: "T001-CH1",
-        name: "Channel 1",
-        status: "online" as const,
-        isActive: true,
-        ringState: "ringing" as const,
-        azimuth: 45,
-        elevation: 15,
-        ammunition: 750,
-        maxAmmunition: 1000,
-        power: 85,
-        temperature: 42,
-        targetLocked: true,
-        shieldActive: true,
-      },
-      {
-        id: "T001-CH2",
-        name: "Channel 2",
-        status: "online" as const,
-        isActive: true,
-        ringState: "idle" as const,
-        azimuth: 120,
-        elevation: 25,
-        ammunition: 600,
-        maxAmmunition: 1000,
-        power: 78,
-        temperature: 38,
-        targetLocked: false,
-        shieldActive: true,
-      },
-    ] as [typeof turrets[0]["channels"][0], typeof turrets[0]["channels"][0]],
-  },
-  {
-    id: "T002",
-    name: "Turret Beta",
-    ip: "192.168.1.102",
-    lastActivity: new Date().toISOString(),
-    channels: [
-      {
-        id: "T002-CH1",
-        name: "Channel 1",
-        status: "offline" as const,
-        isActive: false,
-        ringState: "idle" as const,
-        azimuth: 0,
-        elevation: 0,
-        ammunition: 0,
-        maxAmmunition: 1000,
-        power: 0,
-        temperature: 25,
-        targetLocked: false,
-        shieldActive: false,
-      },
-      {
-        id: "T002-CH2",
-        name: "Channel 2",
-        status: "offline" as const,
-        isActive: false,
-        ringState: "idle" as const,
-        azimuth: 0,
-        elevation: 0,
-        ammunition: 0,
-        maxAmmunition: 1000,
-        power: 0,
-        temperature: 25,
-        targetLocked: false,
-        shieldActive: false,
-      },
-    ] as [typeof turrets[0]["channels"][0], typeof turrets[0]["channels"][0]],
-  },
-  {
-    id: "T003",
-    name: "Turret Gamma",
-    ip: "192.168.1.103",
-    lastActivity: new Date().toISOString(),
-    channels: [
-      {
-        id: "T003-CH1",
-        name: "Channel 1",
-        status: "online" as const,
-        isActive: true,
-        ringState: "ringing" as const,
-        azimuth: 180,
-        elevation: 30,
-        ammunition: 250,
-        maxAmmunition: 1000,
-        power: 65,
-        temperature: 78,
-        targetLocked: false,
-        shieldActive: true,
-      },
-      {
-        id: "T003-CH2",
-        name: "Channel 2",
-        status: "offline" as const,
-        isActive: false,
-        ringState: "idle" as const,
-        azimuth: 90,
-        elevation: 10,
-        ammunition: 500,
-        maxAmmunition: 1000,
-        power: 0,
-        temperature: 30,
-        targetLocked: false,
-        shieldActive: false,
-      },
-    ] as [typeof turrets[0]["channels"][0], typeof turrets[0]["channels"][0]],
-  },
-];
+import { useChannels } from "@/hooks/useChannels";
+import { Radio, Zap, Phone, AlertTriangle } from "lucide-react";
 
 const Index = () => {
-  const [loading, setLoading] = useState(true);
-  
-  // Dynamic stats that update periodically to show NumberFlow animation
-  const [stats, setStats] = useState({
-    totalTurrets: 3,
-    liveChannels: 4,
-    activeShields: 4,
-    targetsLocked: 1,
-  });
+  const { data: channels = [], isLoading, error } = useChannels();
 
-  useEffect(() => {
-    // Simulate initial data loading
-    const timer = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+  // Calculate stats from real data
+  const uniqueTurrets = [...new Set(channels.map(c => c.turretName))].length;
+  const activeChannels = channels.filter(c => 
+    c.state?.toLowerCase().includes("active") || 
+    c.state?.toLowerCase().includes("connected")
+  ).length;
+  const ringingChannels = channels.filter(c => 
+    c.state?.toLowerCase().includes("ringing") || 
+    c.state?.toLowerCase().includes("alerting")
+  ).length;
+  const busyChannels = channels.filter(c => 
+    c.state?.toLowerCase().includes("busy") || 
+    c.state?.toLowerCase().includes("hold")
+  ).length;
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStats({
-        totalTurrets: Math.floor(Math.random() * 5) + 2,
-        liveChannels: Math.floor(Math.random() * 6) + 1,
-        activeShields: Math.floor(Math.random() * 6) + 1,
-        targetsLocked: Math.floor(Math.random() * 4),
-      });
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const totalChannels = turrets.length * 2;
-
-  if (loading) {
+  if (isLoading) {
     return <DashboardSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <div className="h-full bg-background px-4 md:px-6 py-6 md:py-8 flex items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="w-12 h-12 text-destructive mx-auto mb-4" />
+          <h2 className="text-xl font-display font-bold text-foreground mb-2">Failed to load channels</h2>
+          <p className="text-muted-foreground">{error.message}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -165,43 +46,51 @@ const Index = () => {
           items={[
             {
               label: "Total Turrets",
-              value: stats.totalTurrets,
+              value: uniqueTurrets,
               icon: Radio,
               iconColor: "text-primary",
               valueColor: "text-primary text-glow",
             },
             {
-              label: "Live Channels",
-              value: stats.liveChannels,
-              subValue: `/${totalChannels}`,
+              label: "Active Channels",
+              value: activeChannels,
+              subValue: `/${channels.length}`,
               icon: Zap,
               iconColor: "text-success",
               valueColor: "text-success",
             },
             {
-              label: "Active Shields",
-              value: stats.activeShields,
-              icon: Shield,
-              iconColor: "text-primary",
-              valueColor: "text-primary text-glow",
+              label: "Ringing",
+              value: ringingChannels,
+              icon: Phone,
+              iconColor: "text-warning",
+              valueColor: "text-warning",
             },
             {
-              label: "Targets Locked",
-              value: stats.targetsLocked,
-              icon: Target,
-              iconColor: "text-destructive",
-              valueColor: "text-destructive",
+              label: "Busy/Hold",
+              value: busyChannels,
+              icon: Phone,
+              iconColor: "text-primary",
+              valueColor: "text-primary text-glow",
             },
           ]}
         />
       </div>
 
-      {/* Turret Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {turrets.map((turret) => (
-          <TurretCard key={turret.id} turret={turret} />
-        ))}
-      </div>
+      {/* Channels Grid */}
+      {channels.length === 0 ? (
+        <div className="text-center py-12">
+          <Radio className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-display font-bold text-foreground mb-2">No Channels Found</h3>
+          <p className="text-muted-foreground">No channel data available from the server.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          {channels.map((channel) => (
+            <ChannelCard key={channel.id} channel={channel} />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

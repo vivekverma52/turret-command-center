@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import ReportSkeleton from "@/components/skeletons/ReportSkeleton";
+import { apiFetch, ENDPOINTS } from "@/lib/api";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -24,37 +26,6 @@ interface AuditData {
   isFileAvailable: string;
 }
 
-// Mock data for demonstration
-const mockData: AuditData[] = [
-  {
-    callId: "CALL-001",
-    createdOn: "2025-01-15 10:30:00",
-    turretName: "Turret Alpha",
-    lineName: "Line 1",
-    partyNumber: "+1234567890",
-    state: "Conversation",
-    isFileAvailable: "true",
-  },
-  {
-    callId: "CALL-002",
-    createdOn: "2025-01-15 11:45:00",
-    turretName: "Turret Bravo",
-    lineName: "Line 2",
-    partyNumber: "+0987654321",
-    state: "Disconnected",
-    isFileAvailable: "false",
-  },
-  {
-    callId: "CALL-003",
-    createdOn: "2025-01-15 14:20:00",
-    turretName: "Turret Alpha",
-    lineName: "Line 3",
-    partyNumber: "+1122334455",
-    state: "Connected",
-    isFileAvailable: "true",
-  },
-];
-
 const AuditReport = () => {
   const [allData, setAllData] = useState<AuditData[]>([]);
   const [filteredData, setFilteredData] = useState<AuditData[]>([]);
@@ -69,14 +40,24 @@ const AuditReport = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setAllData(mockData);
-      setFilteredData(mockData);
-      setLoading(false);
-    }, 500);
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const data = await apiFetch<AuditData[]>(ENDPOINTS.CALL_AUDIT);
+      setAllData(data);
+      setFilteredData(data);
+    } catch (error) {
+      console.error("Failed to fetch audit data:", error);
+      toast.error("Failed to fetch audit data");
+      setAllData([]);
+      setFilteredData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     applyFilters();
@@ -87,39 +68,39 @@ const AuditReport = () => {
 
     if (filters.startDate) {
       result = result.filter((item) => {
-        const itemDate = item.createdOn.split(" ")[0];
+        const itemDate = item.createdOn?.split(" ")[0];
         return itemDate >= filters.startDate;
       });
     }
 
     if (filters.endDate) {
       result = result.filter((item) => {
-        const itemDate = item.createdOn.split(" ")[0];
+        const itemDate = item.createdOn?.split(" ")[0];
         return itemDate <= filters.endDate;
       });
     }
 
     if (filters.turretName) {
       result = result.filter((item) =>
-        item.turretName.toLowerCase().includes(filters.turretName.toLowerCase())
+        item.turretName?.toLowerCase().includes(filters.turretName.toLowerCase())
       );
     }
 
     if (filters.lineName) {
       result = result.filter((item) =>
-        item.lineName.toLowerCase().includes(filters.lineName.toLowerCase())
+        item.lineName?.toLowerCase().includes(filters.lineName.toLowerCase())
       );
     }
 
     if (filters.partyNumber) {
       result = result.filter((item) =>
-        item.partyNumber.toLowerCase().includes(filters.partyNumber.toLowerCase())
+        item.partyNumber?.toLowerCase().includes(filters.partyNumber.toLowerCase())
       );
     }
 
     if (filters.state) {
       result = result.filter((item) =>
-        item.state.toLowerCase().includes(filters.state.toLowerCase())
+        item.state?.toLowerCase().includes(filters.state.toLowerCase())
       );
     }
 
@@ -143,6 +124,7 @@ const AuditReport = () => {
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return "N/A";
     const date = new Date(dateString);
     return date.toLocaleString();
   };
@@ -263,14 +245,14 @@ const AuditReport = () => {
           </TableHeader>
           <TableBody>
             {filteredData.length > 0 ? (
-              filteredData.map((item) => (
-                <TableRow key={item.callId} className="border-border/30 hover:bg-secondary/30">
+              filteredData.map((item, index) => (
+                <TableRow key={item.callId || index} className="border-border/30 hover:bg-secondary/30">
                   <TableCell className="text-sm text-muted-foreground">{formatDate(item.createdOn)}</TableCell>
-                  <TableCell className="font-semibold text-foreground">{item.turretName}</TableCell>
-                  <TableCell className="text-muted-foreground">{item.lineName}</TableCell>
-                  <TableCell className="font-mono text-sm text-muted-foreground">{item.partyNumber}</TableCell>
+                  <TableCell className="font-semibold text-foreground">{item.turretName || "N/A"}</TableCell>
+                  <TableCell className="text-muted-foreground">{item.lineName || "N/A"}</TableCell>
+                  <TableCell className="font-mono text-sm text-muted-foreground">{item.partyNumber || "N/A"}</TableCell>
                   <TableCell>
-                    <Badge className={getStateVariant(item.state)}>{item.state}</Badge>
+                    <Badge className={getStateVariant(item.state)}>{item.state || "Unknown"}</Badge>
                   </TableCell>
                   <TableCell>
                     <Badge
@@ -283,7 +265,7 @@ const AuditReport = () => {
                       {item.isFileAvailable === "true" ? "Available" : "Not Available"}
                     </Badge>
                   </TableCell>
-                  <TableCell className="font-mono text-sm text-muted-foreground">{item.callId}</TableCell>
+                  <TableCell className="font-mono text-sm text-muted-foreground">{item.callId || "N/A"}</TableCell>
                 </TableRow>
               ))
             ) : (

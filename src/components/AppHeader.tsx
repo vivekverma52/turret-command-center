@@ -23,9 +23,7 @@ const AppHeader = ({ title, icon: Icon }: AppHeaderProps) => {
               <Icon className="w-4 h-4 text-primary" />
             </div>
           )}
-          <h1 className="font-display text-lg font-bold tracking-wider text-foreground uppercase">
-            /* {title} */ NO-REC NO-CALL
-          </h1>
+          <h1 className="font-display text-lg font-bold tracking-wider text-foreground uppercase">NO-REC NO-CALL</h1>
         </div>
       </div>
 

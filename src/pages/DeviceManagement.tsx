@@ -14,10 +14,16 @@ const emptyDevice: Partial<Device> = {
 };
 
 const DeviceManagement = () => {
-  const { devices, isLoading, addDevice, updateDevice, deleteDevice, refetch } = useDevices();
+  const { devices, isLoading, error, addDevice, updateDevice, deleteDevice, refetch } = useDevices();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingDevice, setEditingDevice] = useState<Device | null>(null);
   const [newDevice, setNewDevice] = useState<Partial<Device>>(emptyDevice);
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
+
+  // Track when initial load completes (success or error)
+  if (!isLoading && !hasInitiallyLoaded) {
+    setHasInitiallyLoaded(true);
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -52,7 +58,7 @@ const DeviceManagement = () => {
     setEditingDevice(device);
   };
 
-  if (isLoading) {
+  if (isLoading && !hasInitiallyLoaded) {
     return <AnalyticsSkeleton />;
   }
 

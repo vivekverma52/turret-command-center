@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import ReportSkeleton from "@/components/skeletons/ReportSkeleton";
 import TablePagination from "@/components/TablePagination";
 import { usePagination } from "@/hooks/usePagination";
+import { useDebounce } from "@/hooks/useDebounce";
 import { apiFetch, ENDPOINTS } from "@/lib/api";
 import { toast } from "sonner";
 import {
@@ -72,48 +73,51 @@ const AuditReport = () => {
     }
   };
 
+  const debouncedFilters = useDebounce(filters, 300);
+
   useEffect(() => {
     applyFilters();
-  }, [filters, allData]);
+  }, [debouncedFilters, allData]);
 
   const applyFilters = () => {
     let result = [...allData];
+    const f = debouncedFilters;
 
-    if (filters.startDate) {
+    if (f.startDate) {
       result = result.filter((item) => {
         const itemDate = item.createdOn?.split(" ")[0];
-        return itemDate >= filters.startDate;
+        return itemDate >= f.startDate;
       });
     }
 
-    if (filters.endDate) {
+    if (f.endDate) {
       result = result.filter((item) => {
         const itemDate = item.createdOn?.split(" ")[0];
-        return itemDate <= filters.endDate;
+        return itemDate <= f.endDate;
       });
     }
 
-    if (filters.turretName) {
+    if (f.turretName) {
       result = result.filter((item) =>
-        item.turretName?.toLowerCase().includes(filters.turretName.toLowerCase())
+        item.turretName?.toLowerCase().includes(f.turretName.toLowerCase())
       );
     }
 
-    if (filters.lineName) {
+    if (f.lineName) {
       result = result.filter((item) =>
-        item.lineName?.toLowerCase().includes(filters.lineName.toLowerCase())
+        item.lineName?.toLowerCase().includes(f.lineName.toLowerCase())
       );
     }
 
-    if (filters.partyNumber) {
+    if (f.partyNumber) {
       result = result.filter((item) =>
-        item.partyNumber?.toLowerCase().includes(filters.partyNumber.toLowerCase())
+        item.partyNumber?.toLowerCase().includes(f.partyNumber.toLowerCase())
       );
     }
 
-    if (filters.state) {
+    if (f.state) {
       result = result.filter((item) =>
-        item.state?.toLowerCase().includes(filters.state.toLowerCase())
+        item.state?.toLowerCase().includes(f.state.toLowerCase())
       );
     }
 

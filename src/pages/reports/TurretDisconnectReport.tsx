@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import ReportSkeleton from "@/components/skeletons/ReportSkeleton";
 import TablePagination from "@/components/TablePagination";
 import { usePagination } from "@/hooks/usePagination";
+import { useDebounce } from "@/hooks/useDebounce";
 import { apiFetch, ENDPOINTS } from "@/lib/api";
 import { toast } from "sonner";
 import {
@@ -68,42 +69,45 @@ const TurretDisconnectReport = () => {
     }
   };
 
+  const debouncedFilters = useDebounce(filters, 300);
+
   useEffect(() => {
     applyFilters();
-  }, [filters, allData]);
+  }, [debouncedFilters, allData]);
 
   const applyFilters = () => {
     let result = [...allData];
+    const f = debouncedFilters;
 
-    if (filters.startDate) {
+    if (f.startDate) {
       result = result.filter((item) => {
         const itemDate = item.createdOn?.split(" ")[0];
-        return itemDate >= filters.startDate;
+        return itemDate >= f.startDate;
       });
     }
 
-    if (filters.endDate) {
+    if (f.endDate) {
       result = result.filter((item) => {
         const itemDate = item.createdOn?.split(" ")[0];
-        return itemDate <= filters.endDate;
+        return itemDate <= f.endDate;
       });
     }
 
-    if (filters.turretName) {
+    if (f.turretName) {
       result = result.filter((item) =>
-        item.turretName?.toLowerCase().includes(filters.turretName.toLowerCase())
+        item.turretName?.toLowerCase().includes(f.turretName.toLowerCase())
       );
     }
 
-    if (filters.lineNo) {
+    if (f.lineNo) {
       result = result.filter((item) =>
-        item.lineNo?.toLowerCase().includes(filters.lineNo.toLowerCase())
+        item.lineNo?.toLowerCase().includes(f.lineNo.toLowerCase())
       );
     }
 
-    if (filters.partyNumber) {
+    if (f.partyNumber) {
       result = result.filter((item) =>
-        item.partyNumber?.toLowerCase().includes(filters.partyNumber.toLowerCase())
+        item.partyNumber?.toLowerCase().includes(f.partyNumber.toLowerCase())
       );
     }
 

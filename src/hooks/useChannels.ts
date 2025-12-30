@@ -15,6 +15,5 @@ export const useChannels = () => {
   return useQuery({
     queryKey: ["channels"],
     queryFn: () => apiFetch<Channel[]>(ENDPOINTS.CHANNELS),
-    refetchInterval: 5000, // Auto-refresh every 5 seconds for real-time updates
   });
 };

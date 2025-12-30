@@ -29,6 +29,7 @@ export const useTurrets = () => {
   } = useQuery<Turret[]>({
     queryKey: ["turrets"],
     queryFn: () => apiFetch<Turret[]>(ENDPOINTS.TURRETS),
+    refetchInterval: 5000,
   });
 
   // Add turret mutation

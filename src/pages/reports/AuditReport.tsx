@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { FileAudio, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import ReportSkeleton from "@/components/skeletons/ReportSkeleton";
 import TablePagination from "@/components/TablePagination";
-import { usePagination } from "@/hooks/usePagination";
 import { useDebounce } from "@/hooks/useDebounce";
 import { apiFetch, ENDPOINTS } from "@/lib/api";
 import { toast } from "sonner";
@@ -31,7 +30,6 @@ interface AuditData {
 
 const AuditReport = () => {
   const [allData, setAllData] = useState<AuditData[]>([]);
-  const [filteredData, setFilteredData] = useState<AuditData[]>([]);
   const [filters, setFilters] = useState({
     startDate: "",
     endDate: "",
@@ -42,45 +40,16 @@ const AuditReport = () => {
   });
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
-
-  const {
-    paginatedData,
-    currentPage,
-    pageSize,
-    totalItems,
-    handlePageChange,
-    handlePageSizeChange,
-  } = usePagination({ data: filteredData });
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const data = await apiFetch<AuditData[]>(ENDPOINTS.CALL_AUDIT);
-      setAllData(data);
-      setFilteredData(data);
-    } catch (error) {
-      console.error("Failed to fetch audit data:", error);
-      toast.error("Failed to fetch audit data");
-      setAllData([]);
-      setFilteredData([]);
-    } finally {
-      setLoading(false);
-      setInitialLoad(false);
-    }
-  };
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const debouncedFilters = useDebounce(filters, 300);
 
-  useEffect(() => {
-    applyFilters();
-  }, [debouncedFilters, allData]);
-
-  const applyFilters = () => {
-    let result = [...allData];
+  // Memoized filtered data - only recalculates when allData or debouncedFilters change
+  const filteredData = useMemo(() => {
+    if (allData.length === 0) return [];
+    
+    let result = allData;
     const f = debouncedFilters;
 
     if (f.startDate) {
@@ -98,38 +67,86 @@ const AuditReport = () => {
     }
 
     if (f.turretName) {
+      const searchTerm = f.turretName.toLowerCase();
       result = result.filter((item) =>
-        item.turretName?.toLowerCase().includes(f.turretName.toLowerCase())
+        item.turretName?.toLowerCase().includes(searchTerm)
       );
     }
 
     if (f.lineName) {
+      const searchTerm = f.lineName.toLowerCase();
       result = result.filter((item) =>
-        item.lineName?.toLowerCase().includes(f.lineName.toLowerCase())
+        item.lineName?.toLowerCase().includes(searchTerm)
       );
     }
 
     if (f.partyNumber) {
+      const searchTerm = f.partyNumber.toLowerCase();
       result = result.filter((item) =>
-        item.partyNumber?.toLowerCase().includes(f.partyNumber.toLowerCase())
+        item.partyNumber?.toLowerCase().includes(searchTerm)
       );
     }
 
     if (f.state) {
+      const searchTerm = f.state.toLowerCase();
       result = result.filter((item) =>
-        item.state?.toLowerCase().includes(f.state.toLowerCase())
+        item.state?.toLowerCase().includes(searchTerm)
       );
     }
 
-    setFilteredData(result);
+    return result;
+  }, [allData, debouncedFilters]);
+
+  // Memoized paginated data - only slices when filteredData, currentPage, or pageSize change
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredData.slice(startIndex, startIndex + pageSize);
+  }, [filteredData, currentPage, pageSize]);
+
+  const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+
+  // Reset to page 1 when filtered data changes
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [filteredData.length, totalPages, currentPage]);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages || 1)));
+  }, [totalPages]);
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const data = await apiFetch<AuditData[]>(ENDPOINTS.CALL_AUDIT);
+      setAllData(data);
+    } catch (error) {
+      console.error("Failed to fetch audit data:", error);
+      toast.error("Failed to fetch audit data");
+      setAllData([]);
+    } finally {
+      setLoading(false);
+      setInitialLoad(false);
+    }
   };
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+const handleFilterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     setFilters({
       startDate: "",
       endDate: "",
@@ -138,7 +155,8 @@ const AuditReport = () => {
       partyNumber: "",
       state: "",
     });
-  };
+    setCurrentPage(1);
+  }, []);
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";

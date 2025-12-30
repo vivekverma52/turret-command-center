@@ -155,6 +155,11 @@
   }
 
   .card-tactical {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  .dark .card-tactical {
     background: linear-gradient(145deg, hsl(220 25% 10%), hsl(220 25% 6%));
     border: 1px solid hsl(180 50% 20% / 0.5);
   }

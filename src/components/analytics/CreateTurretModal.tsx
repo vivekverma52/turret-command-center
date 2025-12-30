@@ -1,10 +1,5 @@
 import { X } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,13 +14,7 @@ interface CreateTurretModalProps {
   handleSubmit: () => void;
 }
 
-const CreateTurretModal = ({
-  isOpen,
-  onClose,
-  turretData,
-  handleChange,
-  handleSubmit,
-}: CreateTurretModalProps) => {
+const CreateTurretModal = ({ isOpen, onClose, turretData, handleChange, handleSubmit }: CreateTurretModalProps) => {
   const handleSwitchChange = (checked: boolean) => {
     const event = {
       target: {
@@ -49,17 +38,6 @@ const CreateTurretModal = ({
         <div className="space-y-6 py-4">
           {/* Row 1: Turret ID & Name */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-muted-foreground text-sm">Turret ID</Label>
-              <Input
-                name="turretId"
-                value={turretData.turretId || ""}
-                onChange={handleChange}
-                placeholder="Enter Turret ID"
-                disabled={!!turretData.turretId}
-                className="bg-secondary/50 border-border/50 focus:border-primary"
-              />
-            </div>
             <div className="space-y-2">
               <Label className="text-muted-foreground text-sm">Turret Name</Label>
               <Input
@@ -157,7 +135,9 @@ const CreateTurretModal = ({
                 onCheckedChange={handleSwitchChange}
                 className="data-[state=checked]:bg-primary"
               />
-              <span className={`text-sm font-semibold ${turretData.isActive ? "text-success" : "text-muted-foreground"}`}>
+              <span
+                className={`text-sm font-semibold ${turretData.isActive ? "text-success" : "text-muted-foreground"}`}
+              >
                 {turretData.isActive ? "Active" : "Inactive"}
               </span>
             </div>
@@ -173,10 +153,7 @@ const CreateTurretModal = ({
           >
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan"
-          >
+          <Button onClick={handleSubmit} className="bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan">
             {turretData.turretId ? "Update" : "Create"}
           </Button>
         </div>

@@ -39,7 +39,8 @@ const IPPhoneAuditReport = () => {
     callId: "",
     state: "",
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   const {
     paginatedData,
@@ -67,6 +68,7 @@ const IPPhoneAuditReport = () => {
       setFilteredData([]);
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
   };
 
@@ -151,7 +153,7 @@ const IPPhoneAuditReport = () => {
     }
   };
 
-  if (loading) {
+  if (initialLoad && loading) {
     return <ReportSkeleton columns={6} filterCount={5} />;
   }
 

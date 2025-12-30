@@ -36,7 +36,8 @@ const TurretDisconnectReport = () => {
     lineNo: "",
     partyNumber: "",
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   const {
     paginatedData,
@@ -64,6 +65,7 @@ const TurretDisconnectReport = () => {
       setFilteredData([]);
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
   };
 
@@ -133,7 +135,7 @@ const TurretDisconnectReport = () => {
     return date.toLocaleString();
   };
 
-  if (loading) {
+  if (initialLoad && loading) {
     return <ReportSkeleton columns={5} filterCount={5} />;
   }
 

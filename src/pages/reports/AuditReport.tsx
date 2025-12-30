@@ -40,7 +40,8 @@ const AuditReport = () => {
     partyNumber: "",
     state: "",
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   const {
     paginatedData,
@@ -68,6 +69,7 @@ const AuditReport = () => {
       setFilteredData([]);
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
   };
 
@@ -157,7 +159,7 @@ const AuditReport = () => {
     }
   };
 
-  if (loading) {
+  if (initialLoad && loading) {
     return <ReportSkeleton columns={7} filterCount={6} />;
   }
 

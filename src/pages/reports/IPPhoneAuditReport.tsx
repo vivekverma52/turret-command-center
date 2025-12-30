@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import ReportSkeleton from "@/components/skeletons/ReportSkeleton";
 import TablePagination from "@/components/TablePagination";
 import { usePagination } from "@/hooks/usePagination";
+import { useDebounce } from "@/hooks/useDebounce";
 import { apiFetch, ENDPOINTS } from "@/lib/api";
 import { toast } from "sonner";
 import {
@@ -71,42 +72,45 @@ const IPPhoneAuditReport = () => {
     }
   };
 
+  const debouncedFilters = useDebounce(filters, 300);
+
   useEffect(() => {
     applyFilters();
-  }, [filters, allData]);
+  }, [debouncedFilters, allData]);
 
   const applyFilters = () => {
     let result = [...allData];
+    const f = debouncedFilters;
 
-    if (filters.startDate) {
+    if (f.startDate) {
       result = result.filter((item) => {
         const itemDate = new Date(item.callDisconnectDateTime).toISOString().split("T")[0];
-        return itemDate >= filters.startDate;
+        return itemDate >= f.startDate;
       });
     }
 
-    if (filters.endDate) {
+    if (f.endDate) {
       result = result.filter((item) => {
         const itemDate = new Date(item.callDisconnectDateTime).toISOString().split("T")[0];
-        return itemDate <= filters.endDate;
+        return itemDate <= f.endDate;
       });
     }
 
-    if (filters.deviceIdentifier) {
+    if (f.deviceIdentifier) {
       result = result.filter((item) =>
-        item.deviceIdentifier?.toLowerCase().includes(filters.deviceIdentifier.toLowerCase())
+        item.deviceIdentifier?.toLowerCase().includes(f.deviceIdentifier.toLowerCase())
       );
     }
 
-    if (filters.callId) {
+    if (f.callId) {
       result = result.filter((item) =>
-        item.callId?.toLowerCase().includes(filters.callId.toLowerCase())
+        item.callId?.toLowerCase().includes(f.callId.toLowerCase())
       );
     }
 
-    if (filters.state) {
+    if (f.state) {
       result = result.filter((item) =>
-        item.state?.toLowerCase().includes(filters.state.toLowerCase())
+        item.state?.toLowerCase().includes(f.state.toLowerCase())
       );
     }
 

@@ -8,21 +8,21 @@ export const ENDPOINTS = {
   IP_PHONE_AUDIT: "/ipPhoneAdit/getAllData",
   IP_PHONE_DISCONNECT: "/ipPhoneDisconnect/getAllData",
   TURRET_DISCONNECT: "/turretDisconnect/getAllData",
-  
+
   // Turret Management (Analytics)
-  TURRETS: "/turret/getAllData",
-  CREATE_TURRET: "/turret/create",
-  UPDATE_TURRET: "/turret/update",
-  DELETE_TURRET: "/turret/delete",
-  
+  TURRETS: "/turrets",
+  CREATE_TURRET: "/turrets",
+  UPDATE_TURRET: "/turrets",
+  DELETE_TURRET: "/turrets",
+
   // Dashboard Channels
-  CHANNELS: "/channel/getAllData",
-  
+  CHANNELS: "/turrets",
+
   // Device Management
-  DEVICES: "/deviceModel/getAllData",
-  CREATE_DEVICE: "/deviceModel/create",
-  UPDATE_DEVICE: "/deviceModel/update",
-  DELETE_DEVICE: "/deviceModel/delete",
+  DEVICES: "/ipPhones",
+  CREATE_DEVICE: "/ipPhones",
+  UPDATE_DEVICE: "/ipPhones",
+  DELETE_DEVICE: "/ipPhones",
 } as const;
 
 // Helper function to build full URL
@@ -31,12 +31,9 @@ export const buildUrl = (endpoint: string): string => {
 };
 
 // Generic fetch wrapper with error handling
-export const apiFetch = async <T>(
-  endpoint: string,
-  options?: RequestInit
-): Promise<T> => {
+export const apiFetch = async <T,>(endpoint: string, options?: RequestInit): Promise<T> => {
   const url = buildUrl(endpoint);
-  
+
   const response = await fetch(url, {
     headers: {
       "Content-Type": "application/json",

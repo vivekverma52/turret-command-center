@@ -9,6 +9,8 @@ export interface Channel {
   deviceName: string;
   callId: string;
   state: string;
+  ip: string;
+  isActive: boolean;
 }
 
 export const useChannels = () => {

@@ -1,5 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface AppHeaderProps {
   title: string;
@@ -28,8 +29,10 @@ const AppHeader = ({ title, icon: Icon }: AppHeaderProps) => {
         </div>
       </div>
       
-      {/* Spacer for symmetry on mobile */}
-      <div className="md:hidden w-10" />
+      {/* Theme toggle */}
+      <div className="flex items-center">
+        <ThemeToggle />
+      </div>
     </header>
   );
 };

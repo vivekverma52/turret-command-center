@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FileAudio, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,8 +28,17 @@ interface AuditData {
   isFileAvailable: string;
 }
 
+interface PaginatedResponse {
+  content: AuditData[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
 const AuditReport = () => {
-  const [allData, setAllData] = useState<AuditData[]>([]);
+  const [data, setData] = useState<AuditData[]>([]);
+  const [totalElements, setTotalElements] = useState(0);
   const [filters, setFilters] = useState({
     startDate: "",
     endDate: "",
@@ -45,105 +54,72 @@ const AuditReport = () => {
 
   const debouncedFilters = useDebounce(filters, 300);
 
-  // Memoized filtered data - only recalculates when allData or debouncedFilters change
-  const filteredData = useMemo(() => {
-    if (allData.length === 0) return [];
-    
-    let result = allData;
-    const f = debouncedFilters;
-
-    if (f.startDate) {
-      result = result.filter((item) => {
-        const itemDate = item.createdOn?.split(" ")[0];
-        return itemDate >= f.startDate;
+  // Fetch data with server-side pagination
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Build query params for server-side pagination
+      const params = new URLSearchParams({
+        page: (currentPage - 1).toString(), // API uses 0-based index
+        size: pageSize.toString(),
+        sort: "createdOn,desc",
       });
-    }
 
-    if (f.endDate) {
-      result = result.filter((item) => {
-        const itemDate = item.createdOn?.split(" ")[0];
-        return itemDate <= f.endDate;
-      });
-    }
+      // Add filter params if set
+      if (debouncedFilters.startDate) {
+        params.append("startDate", debouncedFilters.startDate);
+      }
+      if (debouncedFilters.endDate) {
+        params.append("endDate", debouncedFilters.endDate);
+      }
+      if (debouncedFilters.turretName) {
+        params.append("turretName", debouncedFilters.turretName);
+      }
+      if (debouncedFilters.lineName) {
+        params.append("lineName", debouncedFilters.lineName);
+      }
+      if (debouncedFilters.partyNumber) {
+        params.append("partyNumber", debouncedFilters.partyNumber);
+      }
+      if (debouncedFilters.state) {
+        params.append("state", debouncedFilters.state);
+      }
 
-    if (f.turretName) {
-      const searchTerm = f.turretName.toLowerCase();
-      result = result.filter((item) =>
-        item.turretName?.toLowerCase().includes(searchTerm)
+      const response = await apiFetch<PaginatedResponse>(
+        `${ENDPOINTS.CALL_AUDIT}?${params.toString()}`
       );
+      
+      setData(response.content || []);
+      setTotalElements(response.totalElements || 0);
+    } catch (error) {
+      console.error("Failed to fetch audit data:", error);
+      toast.error("Failed to fetch audit data");
+      setData([]);
+      setTotalElements(0);
+    } finally {
+      setLoading(false);
+      setInitialLoad(false);
     }
+  }, [currentPage, pageSize, debouncedFilters]);
 
-    if (f.lineName) {
-      const searchTerm = f.lineName.toLowerCase();
-      result = result.filter((item) =>
-        item.lineName?.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    if (f.partyNumber) {
-      const searchTerm = f.partyNumber.toLowerCase();
-      result = result.filter((item) =>
-        item.partyNumber?.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    if (f.state) {
-      const searchTerm = f.state.toLowerCase();
-      result = result.filter((item) =>
-        item.state?.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    return result;
-  }, [allData, debouncedFilters]);
-
-  // Memoized paginated data - only slices when filteredData, currentPage, or pageSize change
-  const paginatedData = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    return filteredData.slice(startIndex, startIndex + pageSize);
-  }, [filteredData, currentPage, pageSize]);
-
-  const totalItems = filteredData.length;
-  const totalPages = Math.ceil(totalItems / pageSize);
-
-  // Reset to page 1 when filtered data changes
+  // Fetch when page, size, or filters change
   useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(1);
-    }
-  }, [filteredData.length, totalPages, currentPage]);
+    fetchData();
+  }, [fetchData]);
 
   const handlePageChange = useCallback((page: number) => {
-    setCurrentPage(Math.max(1, Math.min(page, totalPages || 1)));
-  }, [totalPages]);
+    setCurrentPage(page);
+  }, []);
 
   const handlePageSizeChange = useCallback((size: number) => {
     setPageSize(size);
     setCurrentPage(1);
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const data = await apiFetch<AuditData[]>(ENDPOINTS.CALL_AUDIT);
-      setAllData(data);
-    } catch (error) {
-      console.error("Failed to fetch audit data:", error);
-      toast.error("Failed to fetch audit data");
-      setAllData([]);
-    } finally {
-      setLoading(false);
-      setInitialLoad(false);
-    }
-  };
-
-const handleFilterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
+    setCurrentPage(1); // Reset to first page when filters change
   }, []);
 
   const resetFilters = useCallback(() => {
@@ -172,6 +148,8 @@ const handleFilterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) 
         return "bg-primary/20 text-primary border-primary/30";
       case "Disconnected":
         return "bg-destructive/20 text-destructive border-destructive/30";
+      case "Idle":
+        return "bg-secondary/50 text-muted-foreground";
       default:
         return "bg-secondary/50 text-muted-foreground";
     }
@@ -193,9 +171,14 @@ const handleFilterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) 
             Call Audit Report
           </h1>
           <p className="text-sm text-muted-foreground">
-            View and filter call audit records
+            View and filter call audit records ({totalElements.toLocaleString()} total records)
           </p>
         </div>
+        {loading && !initialLoad && (
+          <div className="ml-auto">
+            <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
+          </div>
+        )}
       </div>
 
       {/* Filters */}
@@ -279,9 +262,9 @@ const handleFilterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) 
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedData.length > 0 ? (
-              paginatedData.map((item, index) => (
-                <TableRow key={item.callId || index} className="border-border/30 hover:bg-secondary/30">
+            {data.length > 0 ? (
+              data.map((item, index) => (
+                <TableRow key={item.callId || `row-${index}`} className="border-border/30 hover:bg-secondary/30">
                   <TableCell className="text-sm text-muted-foreground">{formatDate(item.createdOn)}</TableCell>
                   <TableCell className="font-semibold text-foreground">{item.turretName || "N/A"}</TableCell>
                   <TableCell className="text-muted-foreground">{item.lineName || "N/A"}</TableCell>
@@ -306,7 +289,7 @@ const handleFilterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) 
             ) : (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                  {allData.length === 0 ? "No audit data available" : "No records match your filters"}
+                  {loading ? "Loading..." : "No audit data available"}
                 </TableCell>
               </TableRow>
             )}
@@ -314,7 +297,7 @@ const handleFilterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) 
         </Table>
         <TablePagination
           currentPage={currentPage}
-          totalItems={totalItems}
+          totalItems={totalElements}
           pageSize={pageSize}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}

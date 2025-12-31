@@ -1,6 +1,5 @@
 // API Configuration
-// export const API_BASE_URL = "http://14.194.159.19:8081";
-// export const API_BASE_URL = "http://localhost:8080";
+export const API_BASE_URL = "http://14.194.159.19:8081";
 
 // API Endpoints
 export const ENDPOINTS = {

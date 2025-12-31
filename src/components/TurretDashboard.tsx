@@ -35,12 +35,10 @@ function TurretDashboard() {
     let isMounted = true;
 
     async function connect() {
-      const SockJS = (await import('sockjs-client')).default;
       const { Client: StompClient } = await import('@stomp/stompjs');
 
-      const socket = new SockJS('http://192.168.100.34:8080/ws');
       stompClient = new StompClient({
-        webSocketFactory: () => socket,
+        brokerURL: 'ws://localhost:8083/ws/websocket',
         debug: () => {},
         reconnectDelay: 5000,
       });
@@ -251,7 +249,7 @@ function TurretDashboard() {
           {/* Footer */}
           <div className="border-t border-gray-700/50 p-4 text-center">
             <p className="text-gray-500 text-sm">
-              Real-time monitoring • WebSocket endpoint: 192.168.100.34:8080
+              Real-time monitoring • WebSocket endpoint: localhost:8083
             </p>
           </div>
         </div>

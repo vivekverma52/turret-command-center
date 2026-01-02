@@ -11,6 +11,7 @@ export const ENDPOINTS = {
 
   // Turret Management (Analytics)
   TURRETS: "/turrets",
+  TURRETS_ACTIVE: "/turrets/active",
   CREATE_TURRET: "/turrets",
   UPDATE_TURRET: "/turrets",
   DELETE_TURRET: "/turrets",

@@ -1,35 +1,61 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Wifi, WifiOff, Monitor, Activity, Bell } from 'lucide-react';
+import { Wifi, WifiOff, Activity, Bell, Radio, Phone, PhoneCall, PhoneOff, Clock } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { apiFetch } from '@/lib/api';
 
-interface MessagePayload {
-  [key: string]: any;
+interface ActiveTurret {
+  id?: number;
+  turretName: string;
+  ip?: string;
+  notificationIp?: string;
+  port?: number;
+  profileName?: string;
+  subscribePort?: number;
+  noOfChannel?: number;
+  isActive?: boolean;
+  // WebSocket live data
+  partyNo?: string | null;
+  lineNo?: string | null;
+  deviceName?: string | null;
+  callId?: string | null;
+  state?: string | null;
+  timestamp?: string | null;
+  conversationCount?: number;
 }
 
-interface WebSocketMessage {
-  id: number;
-  timestamp: string;
-  outer: {
-    turretName?: string;
-    consumerTopic?: string;
-    status?: string;
-  };
-  payload: MessagePayload;
+interface WebSocketData {
+  turretName: string | null;
+  partyNo: string | null;
+  lineNo: string | null;
+  deviceName: string | null;
+  callId: string | null;
+  state: string | null;
+  timestamp: string | null;
+  conversationCount: number;
 }
 
 function TurretDashboard() {
-  const [messages, setMessages] = useState<WebSocketMessage[]>([]);
+  const [turrets, setTurrets] = useState<ActiveTurret[]>([]);
   const [connected, setConnected] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const stompClientRef = useRef<any>(null);
   const notificationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const turretName = connected ? 'axisMF12' : 'axisMF11';
+  // Fetch active turrets from API
+  const { data: activeTurrets, isLoading } = useQuery({
+    queryKey: ['activeTurrets'],
+    queryFn: () => apiFetch<ActiveTurret[]>('/turrets/active'),
+    refetchOnWindowFocus: false,
+  });
 
+  // Initialize turrets from API data
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (activeTurrets) {
+      setTurrets(activeTurrets);
+    }
+  }, [activeTurrets]);
 
+  // WebSocket connection
   useEffect(() => {
     let stompClient: any;
     let isMounted = true;
@@ -49,29 +75,26 @@ function TurretDashboard() {
 
         stompClient.subscribe('/topic/myTopic', (message: any) => {
           try {
-            const outerData = JSON.parse(message.body);
-            let parsedContent: any = null;
-
-            if (outerData.content) {
-              try {
-                parsedContent = JSON.parse(outerData.content);
-              } catch {
-                parsedContent = { raw: outerData.content };
-              }
+            const wsData: WebSocketData = JSON.parse(message.body);
+            
+            // Update turret if turretName matches
+            if (wsData.turretName) {
+              setTurrets(prev => prev.map(turret => {
+                if (turret.turretName === wsData.turretName) {
+                  return {
+                    ...turret,
+                    partyNo: wsData.partyNo,
+                    lineNo: wsData.lineNo,
+                    deviceName: wsData.deviceName,
+                    callId: wsData.callId,
+                    state: wsData.state,
+                    timestamp: wsData.timestamp,
+                    conversationCount: wsData.conversationCount,
+                  };
+                }
+                return turret;
+              }));
             }
-
-            const newMessage: WebSocketMessage = {
-              id: Date.now(),
-              timestamp: new Date().toISOString(),
-              outer: {
-                turretName: outerData.turretName,
-                consumerTopic: outerData.consumerTopic,
-                status: outerData.status,
-              },
-              payload: parsedContent || outerData.payload || {},
-            };
-
-            setMessages(prev => [...prev, newMessage]);
 
             setShowNotification(true);
             if (notificationTimeoutRef.current) {
@@ -79,16 +102,10 @@ function TurretDashboard() {
             }
             notificationTimeoutRef.current = setTimeout(() => {
               setShowNotification(false);
-            }, 3000);
+            }, 2000);
 
           } catch (e) {
-            const errorMessage: WebSocketMessage = {
-              id: Date.now(),
-              timestamp: new Date().toISOString(),
-              outer: {},
-              payload: { message: message.body, error: 'Failed to parse message' }
-            };
-            setMessages(prev => [...prev, errorMessage]);
+            console.error('Failed to parse WebSocket message:', e);
           }
         });
       };
@@ -120,140 +137,159 @@ function TurretDashboard() {
     };
   }, []);
 
-  const getStateColorClasses = (state: string) => {
-    if (state === 'Conversation') return 'text-green-400';
-    if (state === 'Ringing') return 'text-yellow-400';
-    if (state === 'CommonHold') return 'text-blue-400';
-    if (state === 'Idle') return 'text-red-400';
-    return 'text-white';
+  const getStateColor = (state: string | null | undefined) => {
+    if (!state) return 'bg-muted text-muted-foreground';
+    switch (state) {
+      case 'Conversation': return 'bg-success/20 text-success';
+      case 'Ringing': return 'bg-warning/20 text-warning';
+      case 'CommonHold': return 'bg-primary/20 text-primary';
+      case 'Idle': return 'bg-secondary text-muted-foreground';
+      default: return 'bg-muted text-muted-foreground';
+    }
   };
 
-  const clearMessages = () => {
-    setMessages([]);
+  const getStateIcon = (state: string | null | undefined) => {
+    switch (state) {
+      case 'Conversation': return <PhoneCall className="w-4 h-4" />;
+      case 'Ringing': return <Phone className="w-4 h-4 animate-pulse" />;
+      case 'CommonHold': return <Clock className="w-4 h-4" />;
+      default: return <PhoneOff className="w-4 h-4" />;
+    }
   };
 
-  const allKeys = [...new Set(messages.flatMap(msg => Object.keys(msg.payload || {})))];
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <Activity className="w-6 h-6 animate-pulse" />
+          <span>Loading active turrets...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
+    <div className="space-y-6">
+      {/* Notification Toast */}
       {showNotification && (
-        <div className="fixed top-4 right-4 z-50 animate-pulse">
-          <div className="flex items-center gap-2 bg-green-500/90 text-white px-4 py-3 rounded-lg shadow-lg">
+        <div className="fixed top-4 right-4 z-50 animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-2 bg-success/90 text-success-foreground px-4 py-3 rounded-lg shadow-lg">
             <Bell className="w-5 h-5" />
-            New data received!
+            <span className="font-medium">Live update received!</span>
           </div>
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-gray-800/50 rounded-xl border border-gray-700/50 overflow-hidden">
-          {/* Header */}
-          <div className="border-b border-gray-700/50 p-6">
-            <div className="flex items-center gap-3">
-              <Monitor className="w-8 h-8 text-blue-400" />
-              <span className="text-2xl font-bold text-blue-400">STOMP WebSocket Monitor</span>
-            </div>
-            <p className="text-gray-400 mt-2">Real-time message monitoring system</p>
-          </div>
-
-          {/* Status Bar */}
-          <div className="border-b border-gray-700/50 p-4 flex flex-wrap gap-6">
-            {/* Connection Status */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                {connected ? (
-                  <Wifi className="w-5 h-5 text-green-400" />
-                ) : (
-                  <WifiOff className="w-5 h-5 text-red-400" />
-                )}
-                <span className="text-sm text-gray-400">Connection Status</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className={`w-2.5 h-2.5 rounded-full ${connected ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
-                <span className={`font-medium ${connected ? 'text-green-400' : 'text-red-400'}`}>
-                  {connected ? 'Connected' : 'Disconnected'}
-                </span>
-              </div>
-            </div>
-
-            {/* Turret Info */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Activity className="w-5 h-5 text-purple-400" />
-                <span className="text-sm text-gray-400">Turret Information</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-gray-400">Name:</span>
-                <span className="text-purple-400 font-mono bg-purple-400/10 px-2 py-0.5 rounded">
-                  {turretName}
-                </span>
-              </div>
-            </div>
-
-            {/* Clear Button */}
-            {messages.length > 0 && (
-              <button
-                onClick={clearMessages}
-                className="ml-auto px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
-              >
-                Clear Messages
-              </button>
-            )}
-          </div>
-
-          {/* Messages Table */}
-          <div className="p-4">
-            {messages.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-gray-700/50">
-                      <th className="text-left py-3 px-4 text-gray-400 font-medium">Timestamp</th>
-                      {allKeys.map((key) => (
-                        <th key={key} className="text-left py-3 px-4 text-gray-400 font-medium capitalize">
-                          {key}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {messages.map((msg) => (
-                      <tr key={msg.id} className="border-b border-gray-700/30 hover:bg-gray-700/20 transition-colors">
-                        <td className="py-3 px-4 text-gray-300 font-mono text-xs">
-                          {new Date(msg.timestamp).toLocaleTimeString()}
-                        </td>
-                        {allKeys.map((key) => (
-                          <td key={key} className={`py-3 px-4 font-mono text-xs ${key === 'state' ? getStateColorClasses(msg.payload[key]) : 'text-gray-300'}`}>
-                            {msg.payload[key] !== null && msg.payload[key] !== undefined && msg.payload[key] !== ''
-                              ? msg.payload[key].toString()
-                              : 'N/A'}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div ref={messagesEndRef} />
-              </div>
+      {/* Connection Status Bar */}
+      <div className="flex items-center justify-between p-4 rounded-lg bg-card border border-border">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            {connected ? (
+              <Wifi className="w-5 h-5 text-success" />
             ) : (
-              <div className="py-16">
-                <div className="text-center">
-                  <Activity className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                  <p className="text-gray-400 text-lg">No messages received</p>
-                  <p className="text-gray-500 text-sm mt-1">Waiting for WebSocket messages...</p>
-                </div>
-              </div>
+              <WifiOff className="w-5 h-5 text-destructive" />
             )}
+            <span className="text-sm text-muted-foreground">WebSocket:</span>
+            <span className={`font-medium ${connected ? 'text-success' : 'text-destructive'}`}>
+              {connected ? 'Connected' : 'Disconnected'}
+            </span>
           </div>
-
-          {/* Footer */}
-          <div className="border-t border-gray-700/50 p-4 text-center">
-            <p className="text-gray-500 text-sm">
-              Real-time monitoring • WebSocket endpoint: localhost:8083
-            </p>
+          <div className="h-4 w-px bg-border" />
+          <div className="flex items-center gap-2">
+            <Activity className="w-4 h-4 text-primary" />
+            <span className="text-sm text-muted-foreground">Active Turrets:</span>
+            <span className="font-mono font-bold text-foreground">{turrets.length}</span>
           </div>
         </div>
       </div>
+
+      {/* Turret Cards Grid */}
+      {turrets.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {turrets.map((turret) => (
+            <div
+              key={turret.id || turret.turretName}
+              className="card-tactical rounded-lg p-5 relative overflow-hidden group transition-all duration-300 hover:glow-cyan"
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="font-display text-lg font-bold text-foreground tracking-wider">
+                    {turret.turretName}
+                  </h3>
+                  {turret.profileName && (
+                    <p className="text-muted-foreground text-xs mt-0.5">
+                      Profile: {turret.profileName}
+                    </p>
+                  )}
+                </div>
+                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${getStateColor(turret.state)}`}>
+                  {getStateIcon(turret.state)}
+                  <span>{turret.state || 'Unknown'}</span>
+                </div>
+              </div>
+
+              {/* Network Info */}
+              {turret.ip && (
+                <div className="flex items-center gap-2 mb-4 text-muted-foreground">
+                  <Radio className="w-3.5 h-3.5 text-primary" />
+                  <span className="font-mono text-xs">{turret.ip}</span>
+                  {turret.port && <span className="font-mono text-xs">:{turret.port}</span>}
+                </div>
+              )}
+
+              {/* Live Data Section */}
+              <div className="space-y-2 bg-secondary/30 rounded-lg p-3 border border-border/30">
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-muted-foreground">Party No:</span>
+                    <p className="font-mono text-foreground">{turret.partyNo || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Line No:</span>
+                    <p className="font-mono text-foreground">{turret.lineNo || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Device:</span>
+                    <p className="font-mono text-foreground truncate">{turret.deviceName || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Conversations:</span>
+                    <p className="font-mono text-foreground">{turret.conversationCount ?? 0}</p>
+                  </div>
+                </div>
+                
+                {turret.callId && (
+                  <div className="pt-2 border-t border-border/30">
+                    <span className="text-muted-foreground text-xs">Call ID:</span>
+                    <p className="font-mono text-[10px] text-foreground truncate">{turret.callId}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="pt-3 mt-3 border-t border-border/30 flex items-center justify-between">
+                <span className={`text-[10px] uppercase tracking-wider font-semibold ${turret.isActive ? 'text-success' : 'text-muted-foreground'}`}>
+                  {turret.isActive ? '● Active' : '○ Inactive'}
+                </span>
+                {turret.noOfChannel && (
+                  <span className="text-[10px] text-muted-foreground">
+                    {turret.noOfChannel} Channel{turret.noOfChannel > 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Activity className="w-12 h-12 text-muted-foreground mb-4" />
+          <p className="text-lg text-muted-foreground">No active turrets found</p>
+          <p className="text-sm text-muted-foreground/70 mt-1">
+            Waiting for turrets to come online...
+          </p>
+        </div>
+      )}
     </div>
   );
 }
